@@ -1,4 +1,4 @@
-name: Réparer la publication Pages bloquée
+name: Diagnostiquer et débloquer GitHub Pages
 on:
   push:
     paths:
@@ -11,13 +11,22 @@ jobs:
   deblocage:
     runs-on: ubuntu-latest
     steps:
-      - name: Annuler le déploiement bloqué
+      - name: Diagnostiquer et annuler la publication bloquée
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/deployments/32872e52d0cfada7fc1100f5dbbfaddd19c67bf4/cancel"
-      - name: Relancer la construction GitHub Pages
+          target="repos/${GITHUB_REPOSITORY}/pages/deployments/32872e52d0cfada7fc1100f5dbbfaddd19c67bf4"
+          for attempt in 1 2 3; do
+            echo "Tentative ${attempt}: statut actuel"
+            gh api "$target" --jq '.status' || true
+            echo "Demande d'annulation"
+            gh api -X POST "$target/cancel"
+            sleep 12
+          done
+          echo "Statut après annulation"
+          gh api "$target" --jq '.status' || true
+      - name: Demander une nouvelle construction Pages
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
