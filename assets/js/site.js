@@ -70,7 +70,7 @@ function subCard(s,d,x){return `<a class="sub-card" href="#/sous-domaine/${s.id}
 
  function index(){
  bread([]);
- const points=[[200,112],[500,74],[800,112],[110,329],[890,329],[280,521],[720,521]];
+ const points=[[100,103],[500,103],[900,103],[100,310],[900,310],[300,517],[700,517]];
  const lines=points.map(([x,y])=>`<path d="M 500 310 L ${x} ${y}"/><circle cx="${x}" cy="${y}" r="3"/>`).join('');
  return `<section class="home-screen constellation-home"><h1 class="visually-hidden">Choisir une matière</h1><div class="constellation-scene"><svg class="constellation-links" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">${lines}</svg><div class="constellation-core"><img src="assets/logos/logo-girard.png" alt="M. GIRARD" loading="eager"></div>${DATA.subjects.map((s,i)=>`<div class="constellation-node node-${i+1}">${subjectCard(s)}</div>`).join('')}</div></section>`;
 }
