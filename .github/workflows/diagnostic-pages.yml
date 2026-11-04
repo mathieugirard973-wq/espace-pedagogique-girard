@@ -1,18 +1,28 @@
-name: Vérifier la configuration Pages
+name: Réactiver GitHub Pages sur main
 on:
   push:
     paths:
       - '.github/workflows/diagnostic-pages.yml'
 permissions:
   contents: read
-  pages: read
+  pages: write
 jobs:
-  diagnostic:
+  reactivation:
     runs-on: ubuntu-latest
     steps:
-      - name: Lire les paramètres actuels de GitHub Pages
+      - name: Activer Pages si absent
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{status, build_type, source, html_url}' || true
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '.html_url'; then
+            echo "Pages existe déjà"
+          else
+            echo "Pages absent : création depuis main et /"
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/pages" -f "source[branch]=main" -f "source[path]=/" --jq '{html_url, status, source, build_type}'
+          fi
+      - name: Vérifier la configuration finale
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{html_url, status, source, build_type}'
