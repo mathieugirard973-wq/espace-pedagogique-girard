@@ -40,6 +40,15 @@
  const escape=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  const a=(path,label,cls='',ico='')=>`<a href="#/${path}" class="${cls}">${ico?icon(ico):''}${escape(label)}</a>`;
  const image=x=>base+encodeURIComponent(x);
+ const premiumFallbacks={"francais-illustration.webp":"francais.svg","mathematiques-illustration.webp":"mathematiques.svg","sciences-illustration.webp":"sciences-matiere.png","histoire-geo-illustration.webp":"histoire-geo.svg","emc-illustration.webp":"emc.svg","arts-plastiques-illustration.webp":"arts.svg","education-musicale-illustration.webp":"musique.svg"};
+ document.addEventListener('error',event=>{
+  const element=event.target;
+  if(!element||element.tagName!=='IMG'||element.dataset.imageFallback)return;
+  const name=(element.getAttribute('src')||'').split('/').pop();
+  const fallback=premiumFallbacks[name];
+  if(fallback){element.dataset.imageFallback='yes';element.src=base+encodeURIComponent(fallback)}
+ },true);
+
  const resourceRoute=r=>r.type==='pdf'?'document/'+r.id:r.type==='html'?'application/'+r.id:'media/'+r.id;
  const bySubject=id=>DATA.subjects.find(s=>s.id===id);
  const byDomain=(s,d)=>s?.domains.find(x=>x.id===d);
