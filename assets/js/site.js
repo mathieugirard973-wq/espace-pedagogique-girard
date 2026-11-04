@@ -68,7 +68,12 @@ function subCard(s,d,x){return `<a class="sub-card" href="#/sous-domaine/${s.id}
  function band(top,heading,p,img){return `<div class="band"><div><div class="kicker">${escape(top)}</div><h1>${escape(heading)}</h1>${p?`<p>${escape(p)}</p>`:''}</div>${img?`<img src="${image(img)}" alt="">`:''}</div>`}
  function empty(t,p){return `<div class="empty"><div class="empty-symbol">${icon('folder')}</div><h3>${escape(t)}</h3><p>${escape(p)}</p></div>`}
 
- function index(){bread([]);return `<div class="home-screen"><h1 class="visually-hidden">Choisir une matière</h1><div class="subjects-grid">${DATA.subjects.map(subjectCard).join('')}</div></div>`}
+ function index(){
+ bread([]);
+ const points=[[200,112],[500,74],[800,112],[110,329],[890,329],[280,521],[720,521]];
+ const lines=points.map(([x,y])=>`<path d="M 500 310 L ${x} ${y}"/><circle cx="${x}" cy="${y}" r="3"/>`).join('');
+ return `<section class="home-screen constellation-home"><h1 class="visually-hidden">Choisir une matière</h1><div class="constellation-scene"><svg class="constellation-links" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">${lines}</svg><div class="constellation-core"><img src="assets/logos/logo-girard.png" alt="M. GIRARD" loading="eager"></div>${DATA.subjects.map((s,i)=>`<div class="constellation-node node-${i+1}">${subjectCard(s)}</div>`).join('')}</div></section>`;
+}
  function subjectPage(s){
   bread([{label:s.label}]);
   return `<section class="subject-screen count-${s.domains.length}"><header class="subject-screen-head"><div class="subject-title"><span class="subject-kicker">Classe ${escape(s.classes.join(', '))}</span><h1>${escape(s.label)}</h1></div><img src="${image(s.image)}" alt="" loading="eager"></header><div class="subject-overview" aria-label="Domaines de ${escape(s.label)}">${s.domains.map(d=>`<a class="overview-card" href="#/domaine/${s.id}/${d.id}" aria-label="Voir ${escape(d.label)}"><div class="overview-image"><img src="${image(d.image)}" alt="" loading="eager"></div><div class="overview-label"><h2>${escape(d.label)}</h2><span class="overview-arrow" aria-hidden="true">${icon('arrow')}</span></div></a>`).join('')}</div></section>`;
