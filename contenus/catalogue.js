@@ -1,6 +1,6 @@
 /* Catalogue V2 : fonctionne directement sous file://. */
 window.PORTAIL_CATALOGUE = {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "name": "Espace pédagogique — M. GIRARD",
   "subjects": [
     {
@@ -10,12 +10,12 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "502"
       ],
-      "image": "francais.svg",
+      "image": "francais-illustration.webp",
       "domains": [
         {
           "id": "lecture",
           "label": "Lecture et compréhension",
-          "image": "francais.svg",
+          "image": "francais-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -37,7 +37,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "orthographe",
           "label": "Orthographe",
-          "image": "francais.svg",
+          "image": "francais-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -61,7 +61,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "grammaire",
           "label": "Grammaire",
-          "image": "francais.svg",
+          "image": "francais-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -78,7 +78,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "conjugaison",
           "label": "Conjugaison",
-          "image": "francais.svg",
+          "image": "francais-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -90,7 +90,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "ecriture",
           "label": "Expression écrite",
-          "image": "francais.svg",
+          "image": "francais-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -113,12 +113,12 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "501"
       ],
-      "image": "mathematiques.svg",
+      "image": "mathematiques-illustration.webp",
       "domains": [
         {
           "id": "nombres",
           "label": "Nombres et numération",
-          "image": "mathematiques.svg",
+          "image": "mathematiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -140,7 +140,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "calcul",
           "label": "Calcul",
-          "image": "mathematiques.svg",
+          "image": "mathematiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -159,7 +159,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "problemes",
           "label": "Résolution de problèmes",
-          "image": "mathematiques.svg",
+          "image": "mathematiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -176,7 +176,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "grandeurs",
           "label": "Grandeurs et mesures",
-          "image": "mathematiques.svg",
+          "image": "mathematiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -193,7 +193,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "geometrie",
           "label": "Espace et géométrie",
-          "image": "mathematiques.svg",
+          "image": "mathematiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -216,7 +216,7 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "601"
       ],
-      "image": "sciences-matiere.png",
+      "image": "sciences-illustration.webp",
       "domains": [
         {
           "id": "vivant",
@@ -339,12 +339,12 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "601"
       ],
-      "image": "histoire-geo.svg",
+      "image": "histoire-geo-illustration.webp",
       "domains": [
         {
           "id": "histoire",
           "label": "Histoire",
-          "image": "histoire-geo.svg",
+          "image": "histoire-geo-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -361,7 +361,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "geographie",
           "label": "Géographie",
-          "image": "histoire-geo.svg",
+          "image": "histoire-geo-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -394,12 +394,12 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "601"
       ],
-      "image": "emc.svg",
+      "image": "emc-illustration.webp",
       "domains": [
         {
           "id": "citoyennete",
           "label": "Citoyenneté",
-          "image": "emc.svg",
+          "image": "emc-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -416,7 +416,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "information",
           "label": "Information et esprit critique",
-          "image": "emc.svg",
+          "image": "emc-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -434,12 +434,12 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "601"
       ],
-      "image": "arts.svg",
+      "image": "arts-plastiques-illustration.webp",
       "domains": [
         {
           "id": "creer",
           "label": "Pratiques artistiques",
-          "image": "arts.svg",
+          "image": "arts-plastiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -456,7 +456,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "culture",
           "label": "Œuvres et références",
-          "image": "arts.svg",
+          "image": "arts-plastiques-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -479,12 +479,12 @@ window.PORTAIL_CATALOGUE = {
       "classes": [
         "601"
       ],
-      "image": "musique.svg",
+      "image": "education-musicale-illustration.webp",
       "domains": [
         {
           "id": "ecoute",
           "label": "Écoute et perception",
-          "image": "musique.svg",
+          "image": "education-musicale-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -501,7 +501,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "pratique",
           "label": "Pratique musicale",
-          "image": "musique.svg",
+          "image": "education-musicale-illustration.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -625,8 +625,8 @@ window.PORTAIL_CATALOGUE = {
     }
   ],
   "classes": {
-    "601": "Sciences, histoire-géographie, EMC, arts et musique",
     "501": "Mathématiques",
-    "502": "Français"
+    "502": "Français",
+    "601": "Sciences, histoire-géographie, EMC, arts et musique"
   }
 };
