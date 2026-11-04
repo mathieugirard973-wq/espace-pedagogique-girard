@@ -1,4 +1,4 @@
-name: Diagnostiquer et débloquer GitHub Pages
+name: Vérifier le verrou Pages et ses déploiements
 on:
   push:
     paths:
@@ -7,26 +7,29 @@ on:
 permissions:
   contents: read
   pages: write
+  deployments: write
 jobs:
-  deblocage:
+  verification:
     runs-on: ubuntu-latest
     steps:
-      - name: Diagnostiquer et annuler la publication bloquée
+      - name: Examiner le statut de la publication bloquée
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          target="repos/${GITHUB_REPOSITORY}/pages/deployments/32872e52d0cfada7fc1100f5dbbfaddd19c67bf4"
-          for attempt in 1 2 3; do
-            echo "Tentative ${attempt}: statut actuel"
-            gh api "$target" --jq '.status' || true
-            echo "Demande d'annulation"
-            gh api -X POST "$target/cancel"
-            sleep 12
+          old_sha="32872e52d0cfada7fc1100f5dbbfaddd19c67bf4"
+          echo "Statut de l'ancien déploiement Pages :"
+          gh api "repos/${GITHUB_REPOSITORY}/pages/deployments/${old_sha}" --jq '.status'
+          echo "Déploiements associés à l'environnement github-pages :"
+          gh api "repos/${GITHUB_REPOSITORY}/deployments?environment=github-pages&per_page=100" --jq '.[] | [.id, .sha, .environment] | @tsv' || true
+          ids=$(gh api "repos/${GITHUB_REPOSITORY}/deployments?environment=github-pages&per_page=100" --jq ".[] | select(.sha == \"${old_sha}\") | .id" || true)
+          for id in $ids; do
+            echo "Neutralisation du déploiement orphelin ${id}"
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/deployments/${id}/statuses" -f state=inactive -f description="Ancien déploiement Pages annulé"
           done
-          echo "Statut après annulation"
-          gh api "$target" --jq '.status' || true
-      - name: Demander une nouvelle construction Pages
+          echo "Annulation de l'ancien déploiement Pages"
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/deployments/${old_sha}/cancel"
+      - name: Demander une construction Pages
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
