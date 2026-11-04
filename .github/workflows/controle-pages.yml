@@ -1,0 +1,18 @@
+name: Contrôle activation Pages
+on:
+  push:
+    paths:
+      - '.github/workflows/controle-pages.yml'
+permissions:
+  contents: read
+  pages: read
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier le statut officiel de Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{html_url,status,source,build_type}'
