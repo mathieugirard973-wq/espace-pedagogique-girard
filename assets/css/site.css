@@ -5,3 +5,17 @@
 @media(max-width:960px){.subjects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr .35fr;padding:36px}.hero-portrait img{width:170px;height:170px}.footer-grid{grid-template-columns:1fr 1fr}.footer-pronote{grid-column:span 2}.nav-link{padding:0 12px}}
 @media(max-width:650px){.shell{width:min(100% - 28px,1200px)}.prototype-warning{font-size:10px}.warn-extra{display:none}.header-inner{min-height:78px;gap:8px}.brand-logo{width:58px;height:58px}.brand-title{font-size:16px}.brand-name{font-size:12px}.school-brand{display:none}.theme-btn{padding:10px}.theme-btn span{display:none}.nav-link{min-height:51px;padding:0 11px}.hero{padding:28px 23px;grid-template-columns:1fr;min-height:auto}.hero h1{font-size:32px}.hero p{font-size:13px}.hero-portrait{display:none}.hero-actions{margin-top:19px}.meta-strip{margin:15px 0 25px}.subjects-grid,.split-banner,.domain-grid,.subdomain-grid,.games-grid,.catalogue-list,.res-filters{grid-template-columns:1fr}.section-head{margin-top:31px}.section-head h2{font-size:22px}.band{padding:23px;min-height:160px}.band h1{font-size:28px}.band img{width:96px;height:110px}.domain-card{min-height:122px}.domain-pic{width:91px;height:91px}.domain-pic img{height:86px;width:86px}.footer-grid{grid-template-columns:1fr}.footer-pronote{grid-column:span 1}.viewer-frame{height:460px}.iframe-app{height:540px}.list-card{align-items:flex-start;flex-direction:column}.list-card .button{width:100%}.info-card{padding:21px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+
+
+/* V2.1 : illustrations premium des disciplines */
+.subject-art{height:194px;background:radial-gradient(ellipse at 50% 50%,#16355a 0%,#061326 74%,#030c1b 100%)}
+.subject-art:before{display:none}
+.subject-art:after{content:"";position:absolute;inset:auto 17% 0;height:2px;background:linear-gradient(90deg,transparent,#d0a43e 50%,transparent);opacity:.65}
+.subject-art img{width:218px;height:190px;object-fit:contain;filter:drop-shadow(0 8px 8px #0007);transition:transform .26s ease,filter .26s ease}
+.subject-card:hover .subject-art img{transform:scale(1.08);filter:drop-shadow(0 11px 12px #0009)}
+.domain-pic{background:radial-gradient(circle at 50% 47%,#16375e 0%,#08172e 83%)}
+.domain-pic img{border-radius:12px}
+.sub-tile{background:radial-gradient(circle at 50% 50%,#16385e,#07162c)}
+.sub-tile img{border-radius:9px}
+@media(max-width:650px){.subject-art{height:184px}.subject-art img{height:179px;width:200px}}
+@media(prefers-reduced-motion:reduce){.subject-art img{transition:none}}
