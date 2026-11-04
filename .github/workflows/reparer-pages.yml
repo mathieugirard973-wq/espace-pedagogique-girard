@@ -1,0 +1,25 @@
+name: Réparer la publication Pages bloquée
+on:
+  push:
+    paths:
+      - '.github/workflows/reparer-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+jobs:
+  deblocage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Annuler le déploiement bloqué
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/deployments/32872e52d0cfada7fc1100f5dbbfaddd19c67bf4/cancel"
+      - name: Relancer la construction GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/builds"
