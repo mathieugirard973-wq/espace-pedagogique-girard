@@ -1,0 +1,35 @@
+name: Installation unique des illustrations
+on:
+  push:
+    paths:
+      - '.github/workflows/installer_illustrations.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extraire et vérifier les sept images de matières
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd assets/illustrations
+          test -f M_GIRARD_7_ILLUSTRATIONS_GITHUB.zip
+          unzip -o -j M_GIRARD_7_ILLUSTRATIONS_GITHUB.zip '*.webp' -d .
+          for file in francais-illustration.webp mathematiques-illustration.webp sciences-illustration.webp histoire-geo-illustration.webp emc-illustration.webp arts-plastiques-illustration.webp education-musicale-illustration.webp; do
+            test -s "$file"
+          done
+          rm M_GIRARD_7_ILLUSTRATIONS_GITHUB.zip
+      - name: Enregistrer les images dans le site
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/illustrations
+          if ! git diff --cached --quiet; then
+            git commit -m "Installer les 7 illustrations WebP dans les pages de matières"
+            git push
+          fi
