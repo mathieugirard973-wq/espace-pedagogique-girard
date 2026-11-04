@@ -1,0 +1,18 @@
+name: Vérifier la configuration Pages
+on:
+  push:
+    paths:
+      - '.github/workflows/diagnostic-pages.yml'
+permissions:
+  contents: read
+  pages: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lire les paramètres actuels de GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{status, build_type, source, html_url}' || true
