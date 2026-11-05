@@ -69,11 +69,17 @@ function subCard(s,d,x){return `<a class="sub-card" href="#/sous-domaine/${s.id}
  function empty(t,p){return `<div class="empty"><div class="empty-symbol">${icon('folder')}</div><h3>${escape(t)}</h3><p>${escape(p)}</p></div>`}
 
  function index(){
- bread([]);
- const points=[[100,103],[500,103],[900,103],[100,310],[900,310],[300,517],[700,517]];
- const lines=points.map(([x,y])=>`<path d="M 500 310 L ${x} ${y}"/><circle cx="${x}" cy="${y}" r="3"/>`).join('');
- return `<section class="home-screen constellation-home"><h1 class="visually-hidden">Choisir une matière</h1><div class="constellation-scene"><svg class="constellation-links" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">${lines}</svg><div class="constellation-core"><img src="assets/logos/logo-girard.png" alt="M. GIRARD" loading="eager"></div>${DATA.subjects.map((s,i)=>`<div class="constellation-node node-${i+1}">${subjectCard(s)}</div>`).join('')}</div></section>`;
-}
+  bread([]);
+  return `<section class="v29-home" aria-label="Matières"><h1 class="v29-sr">Choisir une matière</h1><div class="v29-scene">
+    <span class="v29-ambient" aria-hidden="true"></span>
+    <span class="v29-ring v29-ring--outer" aria-hidden="true"></span>
+    <span class="v29-ring v29-ring--inner" aria-hidden="true"></span>
+    <span class="v29-spark v29-spark--a" aria-hidden="true"></span>
+    <span class="v29-spark v29-spark--b" aria-hidden="true"></span>
+    <div class="v29-core" aria-label="Logo M. GIRARD"><span class="v29-core-halo" aria-hidden="true"></span><img src="assets/logos/logo-girard.png" alt="M. GIRARD" loading="eager"></div>
+    ${DATA.subjects.map((s,i)=>`<div class="v29-item v29-item--${i+1}"><a class="v29-card" href="#/matiere/${s.id}" aria-label="Ouvrir ${escape(s.label)}"><span class="v29-disc"><img src="${image(s.image)}" alt="" loading="eager"></span><span class="v29-caption">${escape(s.label)}</span></a></div>`).join('')}
+  </div></section>`;
+ }
  function subjectPage(s){
   bread([{label:s.label}]);
   return `<section class="subject-screen count-${s.domains.length}"><header class="subject-screen-head"><div class="subject-title"><span class="subject-kicker">Classe ${escape(s.classes.join(', '))}</span><h1>${escape(s.label)}</h1></div><img src="${image(s.image)}" alt="" loading="eager"></header><div class="subject-overview" aria-label="Domaines de ${escape(s.label)}">${s.domains.map(d=>`<a class="overview-card" href="#/domaine/${s.id}/${d.id}" aria-label="Voir ${escape(d.label)}"><div class="overview-image"><img src="${image(d.image)}" alt="" loading="eager"></div><div class="overview-label"><h2>${escape(d.label)}</h2><span class="overview-arrow" aria-hidden="true">${icon('arrow')}</span></div></a>`).join('')}</div></section>`;
