@@ -14,8 +14,8 @@ body.mathematiques-view #app{
 }
 /* Intitulé plus long, centré sans débordement sur tous les écrans. */
 .fr30-page--mathematiques .fr30-core-title{
-  font-size:clamp(13px,2.05vw,23px);
-  line-height:1.06;letter-spacing:-.015em;white-space:nowrap;
+  font-size:clamp(11px,1.5vw,17px);
+  line-height:1.06;letter-spacing:-.035em;white-space:nowrap;
   max-width:94%;margin:0;
 }
 .fr30-page--mathematiques .fr30-core-kicker{margin-bottom:7px}
