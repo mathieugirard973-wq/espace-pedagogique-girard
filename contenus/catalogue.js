@@ -344,7 +344,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "histoire",
           "label": "Histoire",
-          "image": "histoire-geo-illustration.webp",
+          "image": "histoire-orbite-v33.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -361,7 +361,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "geographie",
           "label": "Géographie",
-          "image": "histoire-geo-illustration.webp",
+          "image": "geographie-orbite-v33.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -411,7 +411,8 @@ window.PORTAIL_CATALOGUE = {
               "label": "Droits et responsabilités",
               "sequenceIds": []
             }
-          ]
+          ],
+          "legacy": true
         },
         {
           "id": "information",
@@ -420,6 +421,51 @@ window.PORTAIL_CATALOGUE = {
           "subdomains": [
             {
               "id": "s1",
+              "label": "Décrypter l’information",
+              "sequenceIds": []
+            }
+          ],
+          "legacy": true
+        },
+        {
+          "id": "alterite",
+          "label": "Altérité et sociabilité",
+          "orbitLabel": "Altérité et sociabilité",
+          "image": "emc-alterite-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Vivre ensemble",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "regles",
+          "label": "Règles collectives et prise d’initiative",
+          "orbitLabel": "Règles et initiative",
+          "image": "emc-regles-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Droits et responsabilités",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "republique",
+          "label": "Principes et symboles de la République",
+          "orbitLabel": "Symboles de la République",
+          "image": "emc-republique-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Valeurs et symboles de la République",
+              "sequenceIds": []
+            },
+            {
+              "id": "s2",
               "label": "Décrypter l’information",
               "sequenceIds": []
             }
@@ -451,7 +497,8 @@ window.PORTAIL_CATALOGUE = {
               "label": "Composition et couleurs",
               "sequenceIds": []
             }
-          ]
+          ],
+          "legacy": true
         },
         {
           "id": "culture",
@@ -461,6 +508,61 @@ window.PORTAIL_CATALOGUE = {
             {
               "id": "s1",
               "label": "Observer une œuvre",
+              "sequenceIds": []
+            },
+            {
+              "id": "s2",
+              "label": "Arts du monde",
+              "sequenceIds": []
+            }
+          ],
+          "legacy": true
+        },
+        {
+          "id": "representation",
+          "label": "La représentation plastique et les dispositifs de présentation",
+          "orbitLabel": "Représentation plastique",
+          "image": "arts-representation-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Dessiner et représenter",
+              "sequenceIds": []
+            },
+            {
+              "id": "s2",
+              "label": "Observer une œuvre",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "fabrications",
+          "label": "Les fabrications et la relation entre l’objet et l’espace",
+          "orbitLabel": "Fabrications et espace",
+          "image": "arts-fabrications-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Créer en volume",
+              "sequenceIds": []
+            },
+            {
+              "id": "s2",
+              "label": "Composer dans l’espace",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "materialite",
+          "label": "La matérialité de la production plastique et la sensibilité aux constituants de l’œuvre",
+          "orbitLabel": "Matérialité et sensibilité",
+          "image": "arts-materialite-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Composition et couleurs",
               "sequenceIds": []
             },
             {
@@ -496,7 +598,8 @@ window.PORTAIL_CATALOGUE = {
               "label": "Écouter une œuvre",
               "sequenceIds": []
             }
-          ]
+          ],
+          "legacy": true
         },
         {
           "id": "pratique",
@@ -511,6 +614,64 @@ window.PORTAIL_CATALOGUE = {
             {
               "id": "s2",
               "label": "Créer et interpréter",
+              "sequenceIds": []
+            }
+          ],
+          "legacy": true
+        },
+        {
+          "id": "chanter",
+          "label": "Chanter et interpréter",
+          "orbitLabel": "Chanter et interpréter",
+          "image": "musique-chanter-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Voix et rythme",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "ecouter",
+          "label": "Écouter, comparer et commenter",
+          "orbitLabel": "Écouter et comparer",
+          "image": "musique-ecouter-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Reconnaître les instruments",
+              "sequenceIds": []
+            },
+            {
+              "id": "s2",
+              "label": "Écouter une œuvre",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "explorer",
+          "label": "Explorer, imaginer et créer",
+          "orbitLabel": "Explorer et créer",
+          "image": "musique-creer-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Créer et interpréter",
+              "sequenceIds": []
+            }
+          ]
+        },
+        {
+          "id": "echanger",
+          "label": "Échanger, partager et argumenter",
+          "orbitLabel": "Échanger et argumenter",
+          "image": "musique-echanger-orbite-v33.webp",
+          "subdomains": [
+            {
+              "id": "s1",
+              "label": "Présenter, partager et discuter des œuvres",
               "sequenceIds": []
             }
           ]
