@@ -3,6 +3,9 @@ on:
   push:
     paths:
       - '.github/workflows/test-accueil-v29.yml'
+      - 'index.html'
+      - 'assets/css/accueil-v29.css'
+      - 'assets/js/site.js'
   workflow_dispatch:
 permissions:
   contents: read
@@ -60,3 +63,12 @@ jobs:
             if(!ok)process.exitCode=1;
           })().catch(e=>{console.error(e);process.exitCode=1});
           JS
+
+      - name: Conserver les captures pour contrôle visuel
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accueil-v29-captures
+          path: /tmp/accueil-*.png
+          if-no-files-found: ignore
+          retention-days: 7
