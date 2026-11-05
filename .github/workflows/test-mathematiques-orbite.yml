@@ -1,0 +1,80 @@
+name: Contrôle visuel page Mathématiques
+on:
+  push:
+    paths:
+      - '.github/workflows/test-mathematiques-orbite.yml'
+      - 'index.html'
+      - 'assets/css/francais-orbite-v30.css'
+      - 'assets/css/mathematiques-orbite-v31.css'
+      - 'assets/js/site.js'
+      - 'contenus/catalogue.js'
+      - 'assets/illustrations/mathematiques-*.webp'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer le navigateur
+        run: |
+          set -e
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Tester les cinq domaines, images et liens sur sept écrans
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/math-http.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const {chromium}=require('playwright-core');
+          const fs=require('fs');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(x=>fs.existsSync(x));
+            if(!exe)throw Error('Chromium indisponible');
+            const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            let all=true;
+            for(const [width,height] of [[1792,872],[1366,768],[1000,700],[768,950],[390,844],[375,667],[360,640]]){
+              const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:8765/#/matiere/mathematiques',{waitUntil:'networkidle'});
+              const result=await page.evaluate(()=>{
+                const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}};
+                const bad=(a,b)=>a.x<b.right-2&&a.right>b.x+2&&a.y<b.bottom-2&&a.bottom>b.y+2;
+                const nodes=[...document.querySelectorAll('.fr30-node')].map(rect);
+                const core=rect(document.querySelector('.fr30-core'));
+                const overlap=[];
+                nodes.forEach((a,i)=>{nodes.slice(i+1).forEach((b,j)=>{if(bad(a,b))overlap.push((i+1)+'/'+(i+j+2))});if(bad(a,core))overlap.push('logo/'+(i+1))});
+                const clipped=nodes.filter(r=>r.x<-2||r.y<-2||r.right>innerWidth+2||r.bottom>innerHeight+2);
+                const links=[...document.querySelectorAll('.fr30-card')].map(a=>a.getAttribute('href'));
+                const images=[...document.querySelectorAll('.fr30-card img')].map(e=>({src:e.getAttribute('src'),loaded:e.complete&&e.naturalWidth===104}));
+                const center=document.querySelector('.fr30-core-title');
+                const titleFits=center.scrollWidth<=center.clientWidth+2;
+                return {count:nodes.length,overlap,clipped:clipped.length,links,images,center:center.textContent,titleFits,mathView:document.body.classList.contains('mathematiques-view'),subjectView:document.body.classList.contains('subject-view')};
+              });
+              const okay=result.count===5&&!result.overlap.length&&!result.clipped&&result.images.every(x=>x.loaded)&&new Set(result.links).size===5&&result.center==='MATHÉMATIQUES'&&result.titleFits&&result.mathView&&!result.subjectView&&!errors.length;
+              console.log(JSON.stringify({width,height,okay,overlaps:result.overlap,clipped:result.clipped,images:result.images,links:result.links,titleFits:result.titleFits,errors}));
+              if(!okay)all=false;
+              if(width===1792||width===1366||width===390)await page.screenshot({path:'/tmp/mathematiques-'+width+'.png'});
+              await page.close();
+            }
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/#/domaine/mathematiques/nombres',{waitUntil:'networkidle'});
+            const domain=await page.locator('.domain-screen-head img').evaluate(e=>({src:e.getAttribute('src'),loaded:e.complete&&e.naturalWidth===104}));
+            await page.goto('http://127.0.0.1:8765/#/matiere/francais',{waitUntil:'networkidle'});
+            const frenchCards=await page.locator('.fr30-card').count();
+            console.log(JSON.stringify({mathDomain:domain,frenchCards}));
+            if(!domain.loaded||frenchCards!==5)all=false;
+            await browser.close();
+            if(!all)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - name: Conserver les captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-mathematiques-orbite
+          path: /tmp/mathematiques-*.png
+          retention-days: 7
+          if-no-files-found: ignore

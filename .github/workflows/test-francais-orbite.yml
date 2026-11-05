@@ -64,7 +64,7 @@ jobs:
             }
             const page=await browser.newPage();
             await page.goto('http://127.0.0.1:8765/#/matiere/mathematiques',{waitUntil:'networkidle'});
-            const mathCards=await page.locator('.overview-card').count();
+            const mathCards=await page.locator('.fr30-card').count();
             await page.goto('http://127.0.0.1:8765/#/domaine/francais/lecture',{waitUntil:'networkidle'});
             const frenchImage=await page.locator('.domain-screen-head img').first().evaluate(e=>({src:e.getAttribute('src'),loaded:e.complete&&e.naturalWidth===192}));
             console.log(JSON.stringify({otherSubjectMath:mathCards,frenchDomainImage:frenchImage}));
