@@ -15,7 +15,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "lecture",
           "label": "Lecture et compréhension",
-          "image": "francais-illustration.webp",
+          "image": "francais-lecture-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -37,7 +37,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "orthographe",
           "label": "Orthographe",
-          "image": "francais-illustration.webp",
+          "image": "francais-orthographe-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -61,7 +61,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "grammaire",
           "label": "Grammaire",
-          "image": "francais-illustration.webp",
+          "image": "francais-grammaire-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -78,7 +78,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "conjugaison",
           "label": "Conjugaison",
-          "image": "francais-illustration.webp",
+          "image": "francais-conjugaison-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -90,7 +90,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "ecriture",
           "label": "Expression écrite",
-          "image": "francais-illustration.webp",
+          "image": "francais-ecriture-v1.webp",
           "subdomains": [
             {
               "id": "s1",
