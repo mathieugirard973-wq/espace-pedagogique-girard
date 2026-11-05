@@ -1,0 +1,85 @@
+name: Contrôle visuel des quatre pages matières V3.3
+on:
+  push:
+    paths:
+      - '.github/workflows/test-domaines-orbite-v33.yml'
+      - 'assets/css/domaines-orbite-v33.css'
+      - 'assets/js/site.js'
+      - 'contenus/catalogue.js'
+      - 'index.html'
+      - 'assets/illustrations/*-orbite-v33.webp'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer navigateur
+        run: |
+          set -e
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Contrôler 4 matières sur 7 tailles d'écran
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/orbite-http.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const {chromium}=require('playwright-core'),fs=require('fs');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(x=>fs.existsSync(x));
+            if(!exe)throw Error('Chromium absent');
+            const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            const subjects=[['histoire-geo',2],['emc',3],['arts',3],['musique',4]];
+            const sizes=[[1792,872],[1366,768],[1000,700],[768,950],[390,844],[375,667],[360,640]];
+            let all=true;
+            for(const [subject,count] of subjects){
+              for(const [width,height] of sizes){
+                const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+                const errors=[];page.on('pageerror',e=>errors.push(e.message));
+                await page.goto('http://127.0.0.1:8765/#/matiere/'+subject,{waitUntil:'networkidle'});
+                const r=await page.evaluate(()=>{
+                  const R=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
+                  const intersect=(a,b)=>a.x<b.right-2&&a.right>b.x+2&&a.y<b.bottom-2&&a.bottom>b.y+2;
+                  const nodes=[...document.querySelectorAll('.fr30-node')].map(R);
+                  const core=R(document.querySelector('.fr30-core'));
+                  const overlap=[];nodes.forEach((a,i)=>{
+                    nodes.slice(i+1).forEach((b,k)=>{if(intersect(a,b))overlap.push('cards '+(i+1)+'+'+(k+i+2))});
+                    if(intersect(a,core))overlap.push('core+'+(i+1))
+                  });
+                  const images=[...document.querySelectorAll('.fr30-card img')].map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth===96}));
+                  const captions=[...document.querySelectorAll('.fr30-caption')].map(e=>({text:e.innerText,clipped:e.scrollHeight>e.clientHeight+2}));
+                  const links=[...document.querySelectorAll('.fr30-card')].map(e=>e.getAttribute('href'));
+                  const visible=nodes.every(r=>r.x>=-2&&r.y>=-2&&r.right<=innerWidth+2&&r.bottom<=innerHeight+2);
+                  const heading=document.querySelector('.fr30-core-title');
+                  const hrect=R(heading), titleFits=hrect.x>=core.x-2&&hrect.right<=core.right+2;
+                  return {count:nodes.length,overlap,images,captions,links,visible,titleFits,view:document.body.classList.contains('orb33-view'),heading:heading.innerText};
+                });
+                const good=r.count===count&&!r.overlap.length&&r.visible&&r.titleFits&&r.view&&r.images.every(x=>x.loaded)&&!r.captions.some(x=>x.clipped)&&new Set(r.links).size===count&&!errors.length;
+                console.log(JSON.stringify({subject,width,height,good,overlap:r.overlap,visible:r.visible,titleFits:r.titleFits,images:r.images.map(x=>x.loaded),captions:r.captions,links:r.links,errors}));
+                if(!good)all=false;
+                if([1792,1366,390].includes(width))await page.screenshot({path:'/tmp/orbite-'+subject+'-'+width+'.png'});
+                await page.close();
+              }
+            }
+            const page=await browser.newPage();
+            for(const href of ['#/domaine/emc/citoyennete','#/domaine/emc/information','#/domaine/arts/creer','#/domaine/arts/culture','#/domaine/musique/ecoute','#/domaine/musique/pratique']){
+              await page.goto('http://127.0.0.1:8765/'+href,{waitUntil:'networkidle'});
+              const good=await page.locator('.domain-screen-head').count()>0;
+              console.log(JSON.stringify({legacy:href,good}));
+              if(!good)all=false;
+            }
+            await page.close();await browser.close();
+            if(!all)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - name: Conserver les captures écran
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captures-matieres-v33
+          path: /tmp/orbite-*.png
+          if-no-files-found: ignore
+          retention-days: 7
