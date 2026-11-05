@@ -155,7 +155,7 @@ body.francais-view #app{flex:1 1 auto;min-height:0;width:100%;display:grid;place
  .fr30-node--4{grid-column:2;grid-row:3}
  .fr30-node--5{grid-column:1/-1;grid-row:4;width:min(50%,171px)}
  .fr30-card{gap:3px}
- .fr30-disc{width:min(71px,61%);max-height:calc(100% - 27px)}
+ .fr30-disc{flex:0 0 clamp(62px,19vw,75px);width:clamp(62px,19vw,75px);height:clamp(62px,19vw,75px);max-height:none;aspect-ratio:1}
  .fr30-caption{min-height:25px;padding:3px 5px;font-size:clamp(10px,2.8vw,12px)}
 }
 @media(max-height:520px) and (min-width:631px){
