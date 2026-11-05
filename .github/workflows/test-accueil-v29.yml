@@ -56,7 +56,7 @@ jobs:
             }
             const page=await browser.newPage();
             await page.goto('http://127.0.0.1:8765/#/matiere/histoire-geo',{waitUntil:'networkidle'});
-            const domaine=await page.locator('.overview-card').count();
+            const domaine=await page.locator('.overview-card, .fr30-card').count();
             console.log(JSON.stringify({route:'matiere/histoire-geo',domainCards:domaine}));
             if(!domaine)ok=false;
             await browser.close();

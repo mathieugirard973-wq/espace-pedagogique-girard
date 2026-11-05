@@ -20,7 +20,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
 .fr30-page--emc .fr30-node--3,.fr30-page--arts .fr30-node--3{--fr30-x:78%;--fr30-y:80%}
 .fr30-page--musique .fr30-node--1{--fr30-x:50%;--fr30-y:11.5%}
 .fr30-page--musique .fr30-node--2{--fr30-x:87%;--fr30-y:50%}
-.fr30-page--musique .fr30-node--3{--fr30-x:50%;--fr30-y:88.5%}
+.fr30-page--musique .fr30-node--3{--fr30-x:50%;--fr30-y:83.5%}
 .fr30-page--musique .fr30-node--4{--fr30-x:13%;--fr30-y:50%}
 @media(max-width:630px){
  body.orb33-view .main-area{padding:4px 0!important}
