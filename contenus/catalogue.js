@@ -118,7 +118,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "nombres",
           "label": "Nombres et numération",
-          "image": "mathematiques-illustration.webp",
+          "image": "mathematiques-nombres-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -140,7 +140,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "calcul",
           "label": "Calcul",
-          "image": "mathematiques-illustration.webp",
+          "image": "mathematiques-calcul-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -159,7 +159,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "problemes",
           "label": "Résolution de problèmes",
-          "image": "mathematiques-illustration.webp",
+          "image": "mathematiques-problemes-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -176,7 +176,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "grandeurs",
           "label": "Grandeurs et mesures",
-          "image": "mathematiques-illustration.webp",
+          "image": "mathematiques-grandeurs-v1.webp",
           "subdomains": [
             {
               "id": "s1",
@@ -193,7 +193,7 @@ window.PORTAIL_CATALOGUE = {
         {
           "id": "geometrie",
           "label": "Espace et géométrie",
-          "image": "mathematiques-illustration.webp",
+          "image": "mathematiques-geometrie-v1.webp",
           "subdomains": [
             {
               "id": "s1",
