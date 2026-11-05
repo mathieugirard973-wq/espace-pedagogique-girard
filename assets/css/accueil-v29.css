@@ -42,8 +42,8 @@ body.home-view #app{flex:1 1 auto;min-height:0;display:grid;place-items:center;w
  position:absolute;left:50%;top:50%;width:7px;height:7px;pointer-events:none;
  border-radius:50%;background:#f4ca76;box-shadow:0 0 13px 4px #dfa749a8;
 }
-.v29-spark--a{animation:v29-rotate-dot 19s linear infinite;transform-origin:center}
-.v29-spark--b{width:5px;height:5px;background:#94d4ff;box-shadow:0 0 12px 3px #65b9ed9c;animation:v29-rotate-dot-back 25s linear infinite}
+.v29-spark--a{animation:none;transform-origin:center}
+.v29-spark--b{width:5px;height:5px;background:#94d4ff;box-shadow:0 0 12px 3px #65b9ed9c;animation:none}
 .v29-core{
  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
  z-index:3;display:grid;place-items:center;
@@ -177,3 +177,12 @@ body.home-view #app{flex:1 1 auto;min-height:0;display:grid;place-items:center;w
  .v29-core img,.v29-card{animation:none!important}
  .v29-card:hover,.v29-card:focus-visible{transform:none}
 }
+
+/* Points lumineux solidaires de leurs anneaux : animation sans calcul de position fragile. */
+.v29-spark{display:none!important}
+.v29-ring--outer::before,.v29-ring--inner::before{
+ content:"";position:absolute;left:50%;top:-4px;width:7px;height:7px;
+ border-radius:50%;background:#f5ce7b;box-shadow:0 0 12px 4px #e7b65a85;
+}
+.v29-ring--inner::before{width:5px;height:5px;top:-3px;background:#91d3f8;box-shadow:0 0 11px 3px #63b9eb83}
+@media(prefers-reduced-motion:reduce){.v29-ring--outer::before,.v29-ring--inner::before{box-shadow:none}}
