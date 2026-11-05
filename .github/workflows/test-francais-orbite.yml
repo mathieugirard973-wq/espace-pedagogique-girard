@@ -1,0 +1,80 @@
+name: Contrôle visuel page Français
+on:
+  push:
+    paths:
+      - '.github/workflows/test-francais-orbite.yml'
+      - 'assets/css/francais-orbite-v30.css'
+      - 'assets/js/site.js'
+      - 'contenus/catalogue.js'
+      - 'assets/illustrations/francais-*.webp'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer navigateur
+        run: |
+          set -e
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Vérifier les cinq médaillons et la navigation
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/fr-http.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const {chromium}=require('playwright-core');
+          const fs=require('fs');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(x=>fs.existsSync(x));
+            if(!exe)throw Error('Chromium indisponible');
+            const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            let all=true;
+            for(const [width,height] of [[1792,872],[1366,768],[1000,700],[768,950],[390,844],[375,667],[360,640]]){
+              const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:8765/#/matiere/francais',{waitUntil:'networkidle'});
+              const results=await page.evaluate(()=>{
+                const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}};
+                const bad=(a,b)=>a.x<b.right-2 && a.right>b.x+2 && a.y<b.bottom-2 && a.bottom>b.y+2;
+                const nodes=[...document.querySelectorAll('.fr30-node')].map(rect);
+                const center=rect(document.querySelector('.fr30-core'));
+                const overlap=[];
+                nodes.forEach((r,i)=>{
+                  nodes.slice(i+1).forEach((b,k)=>{if(bad(r,b))overlap.push('cartes '+(i+1)+' et '+(i+k+2))});
+                  if(bad(r,center))overlap.push('carte '+(i+1)+' et titre');
+                });
+                const clipped=nodes.map((r,i)=>({r,i})).filter(({r})=>r.x<-2 || r.y<-2 || r.right>innerWidth+2 || r.bottom>innerHeight+2).map(({i})=>i+1);
+                const anchors=[...document.querySelectorAll('.fr30-card')];
+                const imgs=[...document.querySelectorAll('.fr30-card img')].map(e=>({src:e.getAttribute('src'),loaded:e.complete && e.naturalWidth===192}));
+                const labels=anchors.map(a=>a.innerText.trim());
+                const links=anchors.map(a=>a.getAttribute('href'));
+                return {count:nodes.length,overlap,clipped,images:imgs,labels,links,centerText:document.querySelector('.fr30-core-title')?.textContent,francaisView:document.body.classList.contains('francais-view'),subjectView:document.body.classList.contains('subject-view')};
+              });
+              const okay=results.count===5&&results.overlap.length===0&&results.clipped.length===0&&results.images.every(x=>x.loaded)&&results.francaisView&&!results.subjectView&&new Set(results.links).size===5&&results.centerText==='FRANÇAIS'&&errors.length===0;
+              console.log(JSON.stringify({width,height,okay,overlap:results.overlap,clipped:results.clipped,imagesOK:results.images.map(x=>x.loaded),labels:results.labels,errors}));
+              if(!okay)all=false;
+              if(width===1792||width===390||width===1366)await page.screenshot({path:'/tmp/francais-'+width+'.png'});
+              await page.close();
+            }
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/#/matiere/mathematiques',{waitUntil:'networkidle'});
+            const mathCards=await page.locator('.overview-card').count();
+            await page.goto('http://127.0.0.1:8765/#/domaine/francais/lecture',{waitUntil:'networkidle'});
+            const frenchImage=await page.locator('.domain-screen-head img').first().evaluate(e=>({src:e.getAttribute('src'),loaded:e.complete&&e.naturalWidth===192}));
+            console.log(JSON.stringify({otherSubjectMath:mathCards,frenchDomainImage:frenchImage}));
+            if(!mathCards||!frenchImage.loaded)all=false;
+            await browser.close();if(!all)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - name: Conserver les captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-francais-orbite
+          path: /tmp/francais-*.png
+          retention-days: 7
+          if-no-files-found: ignore
