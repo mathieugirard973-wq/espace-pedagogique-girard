@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/test-francais-orbite.yml'
+      - 'index.html'
       - 'assets/css/francais-orbite-v30.css'
       - 'assets/js/site.js'
       - 'contenus/catalogue.js'
@@ -50,12 +51,13 @@ jobs:
                 const clipped=nodes.map((r,i)=>({r,i})).filter(({r})=>r.x<-2 || r.y<-2 || r.right>innerWidth+2 || r.bottom>innerHeight+2).map(({i})=>i+1);
                 const anchors=[...document.querySelectorAll('.fr30-card')];
                 const imgs=[...document.querySelectorAll('.fr30-card img')].map(e=>({src:e.getAttribute('src'),loaded:e.complete && e.naturalWidth===192}));
+                const discs=[...document.querySelectorAll('.fr30-disc')].map(e=>{const r=e.getBoundingClientRect();return Math.abs(r.width-r.height)<=2});
                 const labels=anchors.map(a=>a.innerText.trim());
                 const links=anchors.map(a=>a.getAttribute('href'));
-                return {count:nodes.length,overlap,clipped,images:imgs,labels,links,centerText:document.querySelector('.fr30-core-title')?.textContent,francaisView:document.body.classList.contains('francais-view'),subjectView:document.body.classList.contains('subject-view')};
+                return {count:nodes.length,overlap,clipped,images:imgs,discs,labels,links,centerText:document.querySelector('.fr30-core-title')?.textContent,francaisView:document.body.classList.contains('francais-view'),subjectView:document.body.classList.contains('subject-view')};
               });
-              const okay=results.count===5&&results.overlap.length===0&&results.clipped.length===0&&results.images.every(x=>x.loaded)&&results.francaisView&&!results.subjectView&&new Set(results.links).size===5&&results.centerText==='FRANÇAIS'&&errors.length===0;
-              console.log(JSON.stringify({width,height,okay,overlap:results.overlap,clipped:results.clipped,imagesOK:results.images.map(x=>x.loaded),labels:results.labels,errors}));
+              const okay=results.count===5&&results.overlap.length===0&&results.clipped.length===0&&results.images.every(x=>x.loaded)&&results.discs.every(Boolean)&&results.francaisView&&!results.subjectView&&new Set(results.links).size===5&&results.centerText==='FRANÇAIS'&&errors.length===0;
+              console.log(JSON.stringify({width,height,okay,overlap:results.overlap,clipped:results.clipped,imagesOK:results.images.map(x=>x.loaded),circlesOK:results.discs,labels:results.labels,errors}));
               if(!okay)all=false;
               if(width===1792||width===390||width===1366)await page.screenshot({path:'/tmp/francais-'+width+'.png'});
               await page.close();
