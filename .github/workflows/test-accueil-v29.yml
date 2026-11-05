@@ -1,0 +1,62 @@
+name: Contrôle visuel accueil V2.9
+on:
+  push:
+    paths:
+      - '.github/workflows/test-accueil-v29.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer le navigateur
+        run: |
+          set -e
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Contrôler les cartes, le logo et la navigation
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/site-http.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const { chromium } = require('playwright-core');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(f=>require('fs').existsSync(f));
+            if(!exe) throw new Error('Aucun navigateur Chrome trouvé');
+            const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            const sizes=[[1792,872],[1366,768],[1000,700],[768,950],[390,844],[375,667],[360,640]];
+            let ok=true;
+            for(const [width,height] of sizes){
+              const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+              const errors=[];
+              page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:8765/#/accueil',{waitUntil:'networkidle'});
+              const measure=await page.evaluate(()=>{
+                const rect=(el)=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height}};
+                const nodes=[...document.querySelectorAll('.v29-item')].map(rect);
+                const core=rect(document.querySelector('.v29-core'));
+                const bad=(a,b)=>a.x<b.right-2&&a.right>b.x+2&&a.y<b.bottom-2&&a.bottom>b.y+2;
+                let overlaps=[];
+                nodes.forEach((a,i)=>{nodes.slice(i+1).forEach((b,j)=>{if(bad(a,b))overlaps.push('matières '+(i+1)+' / '+(j+i+2))}); if(bad(a,core))overlaps.push('matière '+(i+1)+' / logo')});
+                let clipped=nodes.map((r,i)=>({r,i})).filter(({r})=>r.x < -2||r.y < -2||r.right >innerWidth+2||r.bottom >innerHeight+2).map(({i})=>i+1);
+                const styles=[...document.styleSheets].map(s=>s.href||'').filter(Boolean);
+                return {count:nodes.length,overlaps,clipped,core,first:nodes[0],last:nodes[6],visible:!!document.querySelector('.v29-scene'),styles:styles.map(x=>x.split('/').pop())};
+              });
+              const success=measure.count===7&&!measure.overlaps.length&&!measure.clipped.length&&!errors.length;
+              console.log(JSON.stringify({width,height,success,...measure,errors}));
+              if(!success)ok=false;
+              if(width===1792||width===390)await page.screenshot({path:'/tmp/accueil-'+width+'.png'});
+              await page.close();
+            }
+            const page=await browser.newPage();
+            await page.goto('http://127.0.0.1:8765/#/matiere/histoire-geo',{waitUntil:'networkidle'});
+            const domaine=await page.locator('.overview-card').count();
+            console.log(JSON.stringify({route:'matiere/histoire-geo',domainCards:domaine}));
+            if(!domaine)ok=false;
+            await browser.close();
+            if(!ok)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
