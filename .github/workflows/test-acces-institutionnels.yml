@@ -1,0 +1,76 @@
+name: Contrôle des accès institutionnels
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'assets/css/site-unifie-v35.css'
+      - 'assets/logos/logo-metice-officiel.png'
+      - '.github/workflows/test-acces-institutionnels.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer Chromium
+        run: |
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Tester les logos et liens sur toutes les matières et résolutions
+        run: |
+          python3 -m http.server 8791 --bind 127.0.0.1 >/tmp/institutionnels-http.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const fs=require('fs'),{chromium}=require('playwright-core');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(x=>fs.existsSync(x));
+            if(!exe)throw Error('Chromium indisponible');
+            const b=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            let passed=true;
+            const subjects=['accueil','matiere/francais','matiere/mathematiques','matiere/sciences','matiere/histoire-geo','matiere/emc','matiere/arts','matiere/musique'];
+            for(const [width,height] of [[1792,872],[1366,768],[1000,700],[768,950],[390,844],[375,667],[360,640]]){
+              for(const id of subjects){
+                const p=await b.newPage({viewport:{width,height},reducedMotion:'reduce'});
+                const errors=[];p.on('pageerror',e=>errors.push(e.message));
+                await p.goto('http://127.0.0.1:8791/#/'+id,{waitUntil:'networkidle'});
+                const a=await p.evaluate(()=>{
+                  const nodes=[...document.querySelectorAll('.header-right .institution-link')];
+                  const data=nodes.map(n=>{
+                    const r=n.getBoundingClientRect(),im=n.querySelector('img');
+                    return {url:n.href,logo:im.getAttribute('src'),loaded:im.complete&&im.naturalWidth>0,
+                      label:n.getAttribute('aria-label'),target:n.target,rel:n.rel,
+                      x:r.left,right:r.right,y:r.top,bottom:r.bottom,w:r.width,h:r.height,visible:getComputedStyle(n).display!=='none'};
+                  });
+                  const brand=document.querySelector('.brand').getBoundingClientRect();
+                  return {data,brandRight:brand.right,hasOverflow:document.documentElement.scrollWidth>innerWidth+2,viewportWidth:innerWidth};
+                });
+                const [m,c]=a.data;
+                const ok=a.data.length===2
+                  &&m.url==='https://hubix.ac-reunion.fr/'
+                  &&c.url==='https://etab.ac-reunion.fr/clg-hippolyte-foucque/'
+                  &&m.logo==='assets/logos/logo-metice-officiel.png'
+                  &&c.logo==='assets/logos/logo-college.png'
+                  &&a.data.every(v=>v.loaded&&v.visible&&v.w>=40&&v.h>=40&&v.x>=0&&v.right<=width+2&&v.y>=0
+                     &&v.target==='_blank'&&v.rel.includes('noopener')&&v.rel.includes('noreferrer')&&v.label&&v.label.length>12)
+                  &&a.brandRight<=m.x-2
+                  &&!a.hasOverflow&&!errors.length;
+                console.log(JSON.stringify({screen:width+'x'+height,page:id,ok,logos:a.data.map(x=>({src:x.logo,loaded:x.loaded,x:x.x,right:x.right})),headerGap:m?.x-a.brandRight,errors}));
+                if(!ok)passed=false;
+                if(id==='accueil'&&[1366,390].includes(width))await p.screenshot({path:'/tmp/acces-'+width+'.png'});
+                await p.close();
+              }
+            }
+            await b.close();if(!passed)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - name: Conserver des captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acces-metice-college
+          path: /tmp/acces-*.png
+          if-no-files-found: ignore
+          retention-days: 7

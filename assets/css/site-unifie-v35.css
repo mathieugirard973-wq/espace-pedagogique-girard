@@ -765,3 +765,112 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
   }
   .v29-disc,.fr30-disc { transition: none !important; }
 }
+
+/* ===== Accès officiels permanents — MÉTICE et collège =====
+   Liens institutionnels distincts du menu des matières, toujours visibles. */
+.header-right.institution-links {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:11px;
+  min-width:0;
+}
+.institution-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height:54px;
+  padding:6px 13px 6px 7px;
+  border:1px solid #375a7c;
+  border-radius:13px;
+  background:linear-gradient(142deg,#162f4d,#11243d);
+  color:#f1f6fb;
+  box-shadow:0 3px 13px #030a1529,inset 0 1px #ffffff0e;
+  text-decoration:none!important;
+  transition:background-color .22s ease,border-color .22s ease,box-shadow .22s ease,transform .22s ease;
+}
+.institution-link:hover{
+  transform:translateY(-2px);
+  border-color:var(--gold-dark);
+  box-shadow:0 6px 18px #030a1544,0 0 0 1px #d0a43e24;
+}
+.institution-link:focus-visible{
+  outline:3px solid var(--gold-dark);
+  outline-offset:3px;
+}
+.institution-link__emblem{
+  display:grid;
+  place-items:center;
+  flex:0 0 41px;
+  width:41px;
+  height:41px;
+  border-radius:10px;
+  background:radial-gradient(circle at 45% 35%,#163959,#091b31);
+}
+.institution-link__logo{
+  display:block;
+  width:36px;
+  height:36px;
+  object-fit:contain;
+}
+.institution-link__text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  line-height:1.13;
+  min-width:0;
+  white-space:nowrap;
+}
+.institution-link__text strong{
+  font-size:12px;
+  font-weight:830;
+  letter-spacing:.015em;
+}
+.institution-link__text small{
+  font-size:10px;
+  font-weight:600;
+  color:#b8c9df;
+}
+@media(max-width:880px){
+  .header-right.institution-links{gap:8px}
+  .institution-link{
+    width:50px;
+    height:50px;
+    min-height:50px;
+    padding:4px;
+    gap:0;
+  }
+  .institution-link__text{display:none}
+  .institution-link__emblem{flex-basis:40px;width:40px;height:40px}
+}
+@media(max-width:650px){
+  .header-inner{gap:7px}
+  .brand{gap:9px}
+  .brand-logo{width:46px;height:46px}
+  .brand-title{font-size:14px}
+  .brand-name{font-size:11px}
+  .header-right.institution-links{gap:6px;flex:0 0 auto}
+  .institution-link{
+    width:44px;
+    height:44px;
+    min-height:44px;
+    border-radius:11px;
+    padding:3px;
+  }
+  .institution-link__emblem{width:36px;height:36px;flex-basis:36px;border-radius:8px}
+  .institution-link__logo{width:32px;height:32px}
+}
+@media(max-width:375px){
+  .brand{gap:6px}
+  .brand-logo{width:41px;height:41px}
+  .brand-title{font-size:13px}
+  .brand-name{font-size:10px}
+  .institution-link{width:42px;height:42px;min-height:42px}
+  .institution-link__emblem{width:34px;height:34px;flex-basis:34px}
+  .institution-link__logo{width:30px;height:30px}
+}
+@media(prefers-reduced-motion:reduce){
+  .institution-link{transition:none!important}
+  .institution-link:hover{transform:none!important}
+}
