@@ -2,6 +2,7 @@ name: Contrôle visuel page Mathématiques
 on:
   push:
     paths:
+      - 'assets/css/site-unifie-v35.css'
       - '.github/workflows/test-mathematiques-orbite.yml'
       - 'index.html'
       - 'assets/css/francais-orbite-v30.css'

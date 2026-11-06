@@ -2,6 +2,7 @@ name: Contrôle visuel des quatre pages matières V3.3
 on:
   push:
     paths:
+      - 'assets/css/site-unifie-v35.css'
       - '.github/workflows/test-domaines-orbite-v33.yml'
       - 'assets/css/domaines-orbite-v33.css'
       - 'assets/js/site.js'

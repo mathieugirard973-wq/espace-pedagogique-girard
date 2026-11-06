@@ -2,6 +2,7 @@ name: Contrôle visuel accueil V2.9
 on:
   push:
     paths:
+      - 'assets/css/site-unifie-v35.css'
       - '.github/workflows/test-accueil-v29.yml'
       - 'index.html'
       - 'assets/css/accueil-v29.css'

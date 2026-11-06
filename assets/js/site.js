@@ -76,7 +76,7 @@ function subCard(s,d,x){return `<a class="sub-card" href="#/sous-domaine/${s.id}
     <span class="v29-ring v29-ring--inner" aria-hidden="true"></span>
     <span class="v29-spark v29-spark--a" aria-hidden="true"></span>
     <span class="v29-spark v29-spark--b" aria-hidden="true"></span>
-    <div class="v29-core" aria-label="Logo M. GIRARD"><span class="v29-core-halo" aria-hidden="true"></span><img src="assets/logos/logo-girard-orbite-anim.webp" alt="Logo animé doré et bleu nuit M. GIRARD" loading="eager" decoding="async"></div>
+    <div class="v29-core" aria-label="Logo M. GIRARD"><span class="v29-core-halo" aria-hidden="true"></span><picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/logos/logo-girard.png"><img src="assets/logos/logo-girard-orbite-anim.webp" alt="Logo doré et bleu nuit M. GIRARD" loading="eager" decoding="async" width="180" height="180"></picture></div>
     ${DATA.subjects.map((s,i)=>`<div class="v29-item v29-item--${i+1}"><a class="v29-card" href="#/matiere/${s.id}" aria-label="Ouvrir ${escape(s.label)}"><span class="v29-disc"><img src="${image(s.image)}" alt="" loading="eager"></span><span class="v29-caption">${escape(s.label)}</span></a></div>`).join('')}
   </div></section>`;
  }
