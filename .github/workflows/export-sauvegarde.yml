@@ -1,0 +1,38 @@
+name: Export de sauvegarde complète
+on:
+  push:
+    paths:
+      - '.github/workflows/export-sauvegarde.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer la version sauvegardée
+        uses: actions/checkout@v4
+        with:
+          ref: 'sauvegarde-avant-animations-et-nettoyage-2026-11-06'
+          persist-credentials: false
+      - name: Fabriquer et contrôler l'archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p sauvegarde
+          git archive --format=zip --output="sauvegarde/espace-pedagogique-sauvegarde-2026-11-06.zip" HEAD
+          unzip -tqq "sauvegarde/espace-pedagogique-sauvegarde-2026-11-06.zip"
+          sha256sum "sauvegarde/espace-pedagogique-sauvegarde-2026-11-06.zip" > "sauvegarde/espace-pedagogique-sauvegarde-2026-11-06.sha256"
+          echo 'Commit de référence : db8260e210556fadcf5e6a417ced75d723088952' > sauvegarde/INFORMATIONS.txt
+          echo 'Branche conservée : sauvegarde-avant-animations-et-nettoyage-2026-11-06' >> sauvegarde/INFORMATIONS.txt
+          echo 'Archive : site complet sans suppression de contenus.' >> sauvegarde/INFORMATIONS.txt
+          echo 'Restauration : extraire le ZIP puis publier son contenu sur GitHub Pages.' >> sauvegarde/INFORMATIONS.txt
+          ls -lh sauvegarde
+          unzip -Z1 "sauvegarde/espace-pedagogique-sauvegarde-2026-11-06.zip" | wc -l
+      - name: Proposer le ZIP à télécharger
+        uses: actions/upload-artifact@v4
+        with:
+          name: espace-pedagogique-sauvegarde-2026-11-06
+          path: sauvegarde/
+          if-no-files-found: error
+          retention-days: 90
