@@ -1,0 +1,150 @@
+name: Visionneuse PDF — lecture, zoom, plein écran, impression et navigation
+on:
+  push:
+    paths:
+      - '.github/workflows/test-visionneuse-pdf.yml'
+      - 'assets/js/pdf-lecteur.mjs'
+      - 'assets/js/site.js'
+      - 'assets/css/site-unifie-v35.css'
+      - 'index.html'
+      - 'assets/vendor/pdfjs/**'
+      - 'contenus/catalogue.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pdf-viewer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier la syntaxe JavaScript
+        run: |
+          node --check assets/js/site.js
+          node --check assets/js/pdf-lecteur.mjs
+          test -s assets/vendor/pdfjs/pdf.min.mjs
+          test -s assets/vendor/pdfjs/pdf.worker.min.mjs
+      - name: Préparer un PDF de deux pages pour les tests
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          objects = [
+            b'<< /Type /Catalog /Pages 2 0 R >>',
+            b'<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>',
+            b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R >> >> /Contents 5 0 R >>',
+            b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>',
+            b'<< /Length 49 >>\nstream\nBT /F1 32 Tf 60 700 Td (PAGE UNE) Tj ET\nendstream',
+            b'<< /Length 50 >>\nstream\nBT /F1 32 Tf 60 700 Td (PAGE DEUX) Tj ET\nendstream',
+            b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
+          ]
+          data=bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
+          offsets=[0]
+          for i,obj in enumerate(objects,1):
+            offsets.append(len(data))
+            data.extend(str(i).encode()+b' 0 obj\n'+obj+b'\nendobj\n')
+          xref=len(data)
+          data.extend(b'xref\n0 8\n0000000000 65535 f \n')
+          for offset in offsets[1:]:
+            data.extend(f'{offset:010d} 00000 n \n'.encode())
+          data.extend(b'trailer\n<< /Root 1 0 R /Size 8 >>\nstartxref\n'+str(xref).encode()+b'\n%%EOF\n')
+          Path('documents/demo/test_pdf_2pages.pdf').write_bytes(data)
+          print('PDF de test :',len(data),'octets')
+          PY
+      - name: Installer le navigateur de tests
+        run: |
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-save --no-audit --no-fund playwright-core
+      - name: Tester lecteur PDF en navigateur
+        timeout-minutes: 4
+        run: |
+          python3 -m http.server 8795 --bind 127.0.0.1 > /tmp/pdf-viewer-http.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const fs=require('fs');
+          const {chromium}=require('playwright-core');
+          const assert=require('node:assert/strict');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+            const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            const ctx=await browser.newContext({viewport:{width:1366,height:768},reducedMotion:'reduce',acceptDownloads:true});
+            const page=await ctx.newPage();
+            const errors=[];page.on('pageerror',e=>errors.push(e.message));
+            await page.goto('http://127.0.0.1:8795/#/accueil',{waitUntil:'networkidle'});
+            await page.evaluate(()=>{
+              const session=window.PORTAIL_CATALOGUE.sessions.find(s=>s.id==='demo-maths-calcul');
+              session.resources.push({id:'pdf-deux-pages-test',type:'pdf',label:'Document suivant : deux pages',url:'documents/demo/test_pdf_2pages.pdf'});
+            });
+            await page.goto('http://127.0.0.1:8795/#/document/pdf-calcul',{waitUntil:'domcontentloaded'});
+            await page.locator('.pdf-page-canvas').waitFor({timeout:40000});
+            const first=await page.evaluate(()=>({
+              canvas:document.querySelector('.pdf-page-canvas').width,
+              zoom:document.querySelector('[data-pdf-zoom-label]').textContent,
+              next:document.querySelector('.pdf-reader-doc-side--next a')?.href,
+              download:document.querySelector('.pdf-reader-action--gold')?.hasAttribute('download'),
+              fallback:document.querySelector('[data-pdf-native]').hidden
+            }));
+            assert(first.canvas>200&&first.fallback,JSON.stringify(first));
+            assert.equal(first.zoom,'100 %');
+            assert(first.next.includes('pdf-deux-pages-test'));
+            assert(first.download);
+            await page.locator('[data-pdf-action="zoom-in"]').click();
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='125 %');
+            await page.waitForFunction(w=>document.querySelector('.pdf-page-canvas').width>w,{timeout:10000},first.canvas);
+            const expanded=await page.locator('.pdf-page-canvas').evaluate(el=>el.width);
+            assert(expanded>first.canvas);
+            await page.locator('[data-pdf-action="fit"]').click();
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='100 %');
+            await page.locator('[data-pdf-action="fullscreen"]').click();
+            const full=await page.evaluate(()=>document.fullscreenElement?.id==='pdf-reader'||document.getElementById('pdf-reader').classList.contains('pdf-simulated-fullscreen'));
+            assert(full,'Plein écran non activé');
+            await page.locator('[data-pdf-action="fullscreen"]').click();
+            await page.locator('.pdf-reader-doc-side--next a').click();
+            await page.locator('.pdf-page-canvas').waitFor({timeout:40000});
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-pages]').textContent==='2');
+            assert.equal(await page.locator('.pdf-reader-doc-position').innerText(),'Document 2 / 2');
+            await page.locator('[data-pdf-action="next-page"]').click();
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-page]').value==='2');
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('Page 2 sur 2'));
+            await page.locator('[data-pdf-stage]').focus();
+            await page.keyboard.press('ArrowLeft');
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-page]').value==='1');
+            const [popup]=await Promise.all([
+              ctx.waitForEvent('page',{timeout:12000}),
+              page.locator('[data-pdf-action="print"]').click()
+            ]);
+            await popup.locator('#print-now').waitFor({timeout:15000});
+            await popup.waitForFunction(()=>document.querySelector('#print-now')?.disabled===false,{timeout:25000});
+            assert.equal(await popup.locator('.sheet').count(),2);
+            console.log('IMPRESSION OK : 2 pages préparées dans la fenêtre d’impression');
+            await popup.close();
+            await page.locator('.pdf-reader-doc-side--previous a').click();
+            await page.waitForFunction(()=>location.hash==='#/document/pdf-calcul');
+            await page.locator('.pdf-page-canvas').waitFor({timeout:25000});
+            console.log('NAVIGATION ET ZOOM OK :',JSON.stringify(first));
+            assert.equal(errors.length,0,JSON.stringify(errors));
+            await ctx.close();
+            for(const [width,height] of [[1366,768],[390,844],[360,640]]){
+              const mobile=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+              await mobile.goto('http://127.0.0.1:8795/#/document/pdf-energie',{waitUntil:'domcontentloaded'});
+              await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
+              const state=await mobile.evaluate(()=>{
+                const root=document.querySelector('.pdf-reader').getBoundingClientRect();
+                const buttons=[...document.querySelectorAll('.pdf-reader-control,.pdf-reader-action')];
+                return {width:innerWidth,rootRight:root.right,overflow:document.documentElement.scrollWidth>innerWidth+2,minHeight:Math.min(...buttons.map(b=>b.getBoundingClientRect().height))};
+              });
+              assert(!state.overflow && state.rootRight<=width+2 && state.minHeight>=40,JSON.stringify(state));
+              console.log('RESPONSIVE OK',JSON.stringify(state));
+              if(width===1366||width===390)await mobile.screenshot({path:'/tmp/pdf-lecteur-'+width+'.png'});
+              await mobile.close();
+            }
+            await browser.close();
+            console.log('TOUS LES TESTS DE LA VISIONNEUSE PDF SONT VALIDÉS');
+          })().catch(e=>{console.error('TEST ÉCHOUÉ',e);process.exitCode=1});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captures-visionneuse-pdf
+          path: /tmp/pdf-lecteur-*.png
+          if-no-files-found: ignore
+          retention-days: 7
