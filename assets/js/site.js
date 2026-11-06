@@ -137,7 +137,45 @@ function gamesPage(){
  const isExternal=/^https:\/\//i.test(r.url);
  const link=`<a href="${escape(r.url)}" class="button gold small" target="_blank" rel="noopener noreferrer">${icon('external')}${kind==='pdf'?'Ouvrir le PDF':kind==='html'?'Ouvrir le jeu seul':kind==='media'?'Ouvrir le média':'Ouvrir'}</a>`;
  let inner='';
- if(kind==='pdf')inner=`<div class="viewer-shell"><div class="viewer-toolbar"><h3>PDF</h3><div style="display:flex;gap:8px;flex-wrap:wrap">${link}<a class="button ghost small" href="${escape(r.url)}" download>${icon('download')}Télécharger</a></div></div><iframe class="viewer-frame" src="${escape(r.url)}#view=FitH" title="Aperçu du document PDF"></iframe></div>`;
+ if(kind==='pdf'){
+    const docs=s.resources.filter(x=>x.type==='pdf');
+    const position=docs.findIndex(x=>x.id===r.id);
+    const before=position>0?docs[position-1]:null;
+    const after=position>=0&&position<docs.length-1?docs[position+1]:null;
+    const docLink=doc=>'<a class="pdf-reader-doc-link" href="#/'+resourceRoute(doc)+'" title="'+escape(doc.label)+'">'+icon('chevron')+'<span>'+escape(doc.label)+'</span></a>';
+    const previousLink=before?docLink(before):'<span class="pdf-reader-doc-empty">Premier document</span>';
+    const nextLink=after?docLink(after):'<span class="pdf-reader-doc-empty">Dernier document</span>';
+    inner='<section class="pdf-reader" id="pdf-reader" data-pdf-url="'+escape(r.url)+'" data-pdf-title="'+escape(r.label)+'" aria-label="Visionneuse pédagogique PDF">'+
+      '<div class="pdf-reader-toolbar" role="toolbar" aria-label="Outils du document PDF">'+
+        '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--pages">'+
+          '<button type="button" class="pdf-reader-control" data-pdf-action="prev-page" data-pdf-prev-page aria-label="Page précédente" disabled>‹</button>'+
+          '<label class="pdf-reader-page-label" for="pdf-reader-page">Page <input type="number" id="pdf-reader-page" data-pdf-page value="1" min="1" max="1" inputmode="numeric" aria-label="Numéro de page" disabled> sur <span data-pdf-pages>—</span></label>'+
+          '<button type="button" class="pdf-reader-control" data-pdf-action="next-page" data-pdf-next-page aria-label="Page suivante" disabled>›</button>'+
+        '</div>'+
+        '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--zoom">'+
+          '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-out" aria-label="Réduire le zoom" disabled>−</button>'+
+          '<span class="pdf-reader-zoom" data-pdf-zoom-label aria-live="off">100 %</span>'+
+          '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-in" aria-label="Augmenter le zoom" disabled>+</button>'+
+          '<button type="button" class="pdf-reader-action pdf-reader-fit" data-pdf-action="fit" disabled>Adapter</button>'+
+        '</div>'+
+        '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--actions">'+
+          '<button type="button" class="pdf-reader-action" data-pdf-action="fullscreen">Plein écran</button>'+
+          '<button type="button" class="pdf-reader-action" data-pdf-action="print" disabled>Imprimer</button>'+
+          '<a class="pdf-reader-action pdf-reader-action--gold" href="'+escape(r.url)+'" download>Télécharger</a>'+
+        '</div>'+
+      '</div>'+
+      '<p class="pdf-reader-status" data-pdf-status role="status" aria-live="polite">Chargement du document…</p>'+
+      '<div class="pdf-reader-stage" data-pdf-stage tabindex="0" aria-label="Page du PDF. Utiliser les flèches gauche et droite pour changer de page.">'+
+        '<div class="pdf-reader-canvas-host" data-pdf-canvas-host></div>'+
+        '<div class="pdf-reader-native" data-pdf-native hidden><p>Affichage PDF natif. <a href="'+escape(r.url)+'" target="_blank" rel="noopener noreferrer">Ouvrir le PDF dans un nouvel onglet</a></p><iframe data-pdf-native-frame title="Document PDF"></iframe></div>'+
+      '</div>'+
+      '<div class="pdf-reader-doc-nav" aria-label="Passer à un autre PDF de cette séance">'+
+        '<div class="pdf-reader-doc-side pdf-reader-doc-side--previous">'+previousLink+'</div>'+
+        '<span class="pdf-reader-doc-position">Document '+(position+1)+' / '+docs.length+'</span>'+
+        '<div class="pdf-reader-doc-side pdf-reader-doc-side--next">'+nextLink+'</div>'+
+      '</div>'+
+    '</section>';
+  }
  else if(kind==='html')inner=`<div class="viewer-toolbar" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px"><h3>Jeu interactif</h3>${link}</div><iframe src="${escape(r.url)}" class="iframe-app" title="Jeu interactif ${escape(r.label)}"></iframe>`;
  else if(r.type==='image')inner=`<div class="viewer-shell" style="text-align:center;padding:25px"><img src="${escape(r.url)}" alt="${escape(r.label)}" style="max-height:550px;width:auto;object-fit:contain"></div><div style="margin:14px 0">${link}</div>`;
  else inner=isExternal?`<div class="resource-panel"><h3>Vidéo sur une plateforme externe</h3><p class="content-note">Ce média s'ouvre sur son site d'origine. Une connexion Internet peut être nécessaire.</p>${link}</div>`:empty('Adresse vidéo à vérifier','La vidéo doit pointer vers une adresse https autorisée et vérifiée avant publication.');
@@ -148,7 +186,25 @@ function infoPage(){
  return `${title('À propos')}<div class="resource-panel"><p>Espace pédagogique — M. GIRARD.</p><p class="content-note">Les ressources marquées « Exemple » servent à présenter le site. Ce portail est public.</p></div>`;
  }
  function notFound(){bread([{label:'Accueil',path:'accueil'},{label:'Page introuvable'}]);APP.innerHTML=`${empty('Page introuvable','Cette rubrique est indisponible dans le catalogue actuel.')}<p style="text-align:center;margin:20px">${a('accueil','Retour à l’accueil','button gold','back')}</p>`}
- function render(){const parts=routeParts();const route=parts[0];document.body.classList.toggle('home-view',route==='accueil');document.body.classList.toggle('subject-view',route==='matiere'&&!['francais','mathematiques','sciences','histoire-geo','emc','arts','musique'].includes(parts[1])&&!!bySubject(parts[1]));document.body.classList.toggle('francais-view',route==='matiere'&&parts[1]==='francais');document.body.classList.toggle('mathematiques-view',route==='matiere'&&parts[1]==='mathematiques');document.body.classList.toggle('sciences-view',route==='matiere'&&parts[1]==='sciences');document.body.classList.toggle('orb33-view',route==='matiere'&&['histoire-geo','emc','arts','musique'].includes(parts[1]));document.body.classList.toggle('domain-view',route==='domaine'&&!!byDomain(bySubject(parts[1]),parts[2]));let html='';let current='accueil';try{switch(route){case'accueil':html=index();break;case'matiere':{const s=bySubject(parts[1]);if(!s)return notFound();current=s.id;html=subjectPage(s);break;}case'domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]);if(!d)return notFound();current=s.id;html=domainPage(s,d);break;}case'sous-domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]),x=bySub(d,parts[3]);if(!x)return notFound();current=s.id;html=subPage(s,d,x);break;}case'sequence':{const seq=bySequence(parts[1]);if(!seq)return notFound();const ss=bySession(seq.sessions[0]);current=ss.subject;html=seqPage(seq);break;}case'seance':{const ss=bySession(parts[1]);if(!ss)return notFound();current=ss.subject;html=sessionPage(ss);break;}case'ressources':current='ressources';html=allResources();break;case'jeux':current='jeux';html=gamesPage();break;case'document':{let r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'pdf');break;}case'application':{let r=resourceById(parts[1]);current='jeux';html=viewer(parts[1],'html');break;}case'media':{const r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'media');break;}case'a-propos':html=infoPage();break;default:return notFound()}APP.innerHTML=html;nav(current);if(route==='ressources')updateResources();document.title=`${BREAD.lastElementChild?.textContent||'Accueil'} | Espace pédagogique — M. GIRARD`;}catch(e){console.error('Erreur du site',e);APP.innerHTML=empty('Erreur de chargement','Ouvre à nouveau index.html. Si le problème persiste, consulte le guide du site.')}}
+ function render(){window.PedagogicalPdfViewer?.dispose();const parts=routeParts();const route=parts[0];document.body.classList.toggle('home-view',route==='accueil');document.body.classList.toggle('subject-view',route==='matiere'&&!['francais','mathematiques','sciences','histoire-geo','emc','arts','musique'].includes(parts[1])&&!!bySubject(parts[1]));document.body.classList.toggle('francais-view',route==='matiere'&&parts[1]==='francais');document.body.classList.toggle('mathematiques-view',route==='matiere'&&parts[1]==='mathematiques');document.body.classList.toggle('sciences-view',route==='matiere'&&parts[1]==='sciences');document.body.classList.toggle('orb33-view',route==='matiere'&&['histoire-geo','emc','arts','musique'].includes(parts[1]));document.body.classList.toggle('domain-view',route==='domaine'&&!!byDomain(bySubject(parts[1]),parts[2]));let html='';let current='accueil';try{switch(route){case'accueil':html=index();break;case'matiere':{const s=bySubject(parts[1]);if(!s)return notFound();current=s.id;html=subjectPage(s);break;}case'domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]);if(!d)return notFound();current=s.id;html=domainPage(s,d);break;}case'sous-domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]),x=bySub(d,parts[3]);if(!x)return notFound();current=s.id;html=subPage(s,d,x);break;}case'sequence':{const seq=bySequence(parts[1]);if(!seq)return notFound();const ss=bySession(seq.sessions[0]);current=ss.subject;html=seqPage(seq);break;}case'seance':{const ss=bySession(parts[1]);if(!ss)return notFound();current=ss.subject;html=sessionPage(ss);break;}case'ressources':current='ressources';html=allResources();break;case'jeux':current='jeux';html=gamesPage();break;case'document':{let r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'pdf');break;}case'application':{let r=resourceById(parts[1]);current='jeux';html=viewer(parts[1],'html');break;}case'media':{const r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'media');break;}case'a-propos':html=infoPage();break;default:return notFound()}APP.innerHTML=html;nav(current);
+  if(route==='document'&&document.getElementById('pdf-reader')){
+    const requestedId=parts[1];
+    import('assets/js/pdf-lecteur.mjs?v=1').then(module=>{
+      if(routeParts()[0]==='document'&&routeParts()[1]===requestedId&&document.getElementById('pdf-reader'))module.mount();
+    }).catch(error=>{
+      console.error('Chargement de la visionneuse',error);
+      const root=document.getElementById('pdf-reader');
+      if(root){
+        const native=root.querySelector('[data-pdf-native]');
+        const iframe=root.querySelector('[data-pdf-native-frame]');
+        const status=root.querySelector('[data-pdf-status]');
+        if(native)native.hidden=false;
+        if(iframe)iframe.src=root.dataset.pdfUrl+'#view=FitH';
+        if(status)status.textContent='Affichage avancé indisponible : utilisation de la lecture PDF du navigateur.';
+      }
+    });
+  }
+  if(route==='ressources')updateResources();document.title=`${BREAD.lastElementChild?.textContent||'Accueil'} | Espace pédagogique — M. GIRARD`;}catch(e){console.error('Erreur du site',e);APP.innerHTML=empty('Erreur de chargement','Ouvre à nouveau index.html. Si le problème persiste, consulte le guide du site.')}}
  document.addEventListener('input',e=>{if(e.target.id==='search')updateResources()});document.addEventListener('change',e=>{if(e.target.id==='type-select')updateResources();if(e.target.id==='parcours-select')updateParcours()});
  window.addEventListener('hashchange',()=>{render();window.scrollTo({top:0,behavior:'instant'})});
  // Thème sombre permanent : aucune bascule ni lecture de préférence locale.
