@@ -874,3 +874,9 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
   .institution-link{transition:none!important}
   .institution-link:hover{transform:none!important}
 }
+
+/* Renforcer le contraste du logo d'établissement, sans modifier le fichier officiel. */
+.institution-link--college .institution-link__emblem {
+  background:radial-gradient(circle at 36% 28%,#587e9d 0%,#2c5375 56%,#142b47 100%);
+  box-shadow:inset 0 0 0 1px #8eb3d142;
+}
