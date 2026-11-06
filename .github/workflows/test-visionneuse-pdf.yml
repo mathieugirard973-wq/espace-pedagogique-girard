@@ -139,7 +139,7 @@ jobs:
               await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
               const state=await mobile.evaluate(()=>{
                 const root=document.querySelector('.pdf-reader').getBoundingClientRect();
-                const buttons=[...document.querySelectorAll('.pdf-reader-control,.pdf-reader-action')];
+                const buttons=[...document.querySelectorAll('.pdf-reader-control,.pdf-reader-action')].filter(el=>el.getClientRects().length&&getComputedStyle(el).display!=='none');
                 return {width:innerWidth,rootRight:root.right,overflow:document.documentElement.scrollWidth>innerWidth+2,minHeight:Math.min(...buttons.map(b=>b.getBoundingClientRect().height))};
               });
               assert(!state.overflow && state.rootRight<=width+2 && state.minHeight>=40,JSON.stringify(state));

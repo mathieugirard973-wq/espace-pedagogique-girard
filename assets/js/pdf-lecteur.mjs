@@ -43,6 +43,8 @@ function useNativeFallback(state, message) {
   announce(state, message + ' Le lecteur PDF du navigateur reste disponible.');
   const buttons = state.root.querySelectorAll('[data-pdf-action="zoom-in"],[data-pdf-action="zoom-out"],[data-pdf-action="fit"],[data-pdf-action="prev-page"],[data-pdf-action="next-page"]');
   buttons.forEach(button => { button.disabled = true; });
+  const printButton = $(state.root, '[data-pdf-action="print"]');
+  if (printButton) printButton.disabled = false;
 }
 
 async function engine() {
@@ -154,7 +156,7 @@ async function printAll(state) {
   const progress = popup.document.getElementById('progress');
   if (!state.document || state.document.numPages > 60) {
     progress.textContent = 'Ouverture du document dans le lecteur natif pour impression.';
-    popup.location.href = state.url;
+    popup.location.href = new URL(state.url, document.baseURI).href;
     return;
   }
   const objectURLs = [];
@@ -191,7 +193,7 @@ async function printAll(state) {
     console.error('Impression PDF',error);
     if (!popup.closed) {
       progress.textContent = 'Impression directe indisponible. Le PDF original va s’ouvrir.';
-      popup.location.href = state.url;
+      popup.location.href = new URL(state.url, document.baseURI).href;
     }
   } finally {
     // Les images restent utilisables tant que la fenêtre d'impression est ouverte.
