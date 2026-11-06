@@ -1,0 +1,62 @@
+name: Contrôle des vraies séances publiées
+on:
+  push:
+    paths:
+      - '.github/workflows/test-gestionnaire-contenus.yml'
+      - 'assets/js/site.js'
+      - 'contenus/catalogue.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer Chromium
+        run: |
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Tester une séance réelle simulée et conserver les démonstrations
+        run: |
+          python3 -m http.server 8784 --bind 127.0.0.1 >/tmp/gestionnaire-site.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const fs=require('fs'),{chromium}=require('playwright-core');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(p=>fs.existsSync(p));
+            if(!exe)throw Error('Navigateur introuvable');
+            const b=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            const p=await b.newPage();
+            const errors=[];p.on('pageerror',e=>errors.push(e.message));
+            await p.goto('http://127.0.0.1:8784/#/accueil',{waitUntil:'networkidle'});
+            const key=await p.evaluate(()=>{
+              const d=window.PORTAIL_CATALOGUE;
+              const s=d.subjects.find(x=>x.id==='mathematiques');
+              const domain=s.domains.find(x=>x.id==='nombres');
+              const sub=domain.subdomains[0];
+              const seq={id:'test-reel-seq',title:'Séquence réelle de test',sessions:['test-reel-ses']};
+              const ses={id:'test-reel-ses',subject:'mathematiques',domain:'nombres',subdomain:sub.id,sequence:seq.id,number:'S01',title:'Séance réelle de test',classe:'501',description:'Leçon de test créée uniquement dans le navigateur',resources:[{id:'test-reel-pdf',type:'pdf',label:'Document pédagogique',url:'documents/demo/MAT501_calcul_mental_DEMONSTRATION.pdf'}]};
+              d.sequences.push(seq);d.sessions.push(ses);sub.sequenceIds.push(seq.id);
+              return sub.id;
+            });
+            const go=async hash=>{await p.evaluate(h=>{window.location.hash=h},hash);await p.waitForTimeout(250);return await p.locator('#app').inner_text()};
+            const list=await go('#/sous-domaine/mathematiques/nombres/'+key);
+            const seq=await go('#/sequence/test-reel-seq');
+            const ses=await go('#/seance/test-reel-ses');
+            const resource=await go('#/document/test-reel-pdf');
+            const demo=await go('#/seance/demo-maths-calcul');
+            const checks={
+              seqShown:list.includes('Séquence réelle de test')&&!list.includes('Exemple'),
+              sesShown:seq.includes('Séance réelle de test')&&!seq.includes('Exemple'),
+              details:ses.includes('Leçon de test créée uniquement dans le navigateur')&&!ses.includes('Exemple'),
+              resource:resource.includes('Document pédagogique')&&!resource.includes('Démonstration'),
+              oldDemo:demo.includes('Exemple'),
+              noErrors:errors.length===0
+            };
+            console.log(JSON.stringify({checks,errors}));
+            await b.close();
+            if(Object.values(checks).some(x=>!x))process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
