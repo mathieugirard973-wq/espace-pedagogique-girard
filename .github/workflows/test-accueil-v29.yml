@@ -6,6 +6,7 @@ on:
       - 'index.html'
       - 'assets/css/accueil-v29.css'
       - 'assets/js/site.js'
+      - 'assets/logos/logo-girard-orbite-anim.webp'
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,6 +27,8 @@ jobs:
           sleep 2
           node <<'JS'
           const { chromium } = require('playwright-core');
+          const rawLogo=require('fs').readFileSync('assets/logos/logo-girard-orbite-anim.webp');
+          if(rawLogo.subarray(0,4).toString()!=='RIFF'||rawLogo.subarray(8,12).toString()!=='WEBP'||rawLogo.toString('latin1').split('ANMF').length<8)throw Error('Le logo WebP animé est absent ou incomplet');
           (async()=>{
             const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(f=>require('fs').existsSync(f));
             if(!exe) throw new Error('Aucun navigateur Chrome trouvé');
@@ -46,9 +49,9 @@ jobs:
                 nodes.forEach((a,i)=>{nodes.slice(i+1).forEach((b,j)=>{if(bad(a,b))overlaps.push('matières '+(i+1)+' / '+(j+i+2))}); if(bad(a,core))overlaps.push('matière '+(i+1)+' / logo')});
                 let clipped=nodes.map((r,i)=>({r,i})).filter(({r})=>r.x < -2||r.y < -2||r.right >innerWidth+2||r.bottom >innerHeight+2).map(({i})=>i+1);
                 const styles=[...document.styleSheets].map(s=>s.href||'').filter(Boolean);
-                return {count:nodes.length,overlaps,clipped,core,first:nodes[0],last:nodes[6],visible:!!document.querySelector('.v29-scene'),styles:styles.map(x=>x.split('/').pop())};
+                const logo=document.querySelector('.v29-core img');return {count:nodes.length,overlaps,clipped,core,first:nodes[0],last:nodes[6],visible:!!document.querySelector('.v29-scene'),logoLoaded:logo.complete&&logo.naturalWidth===175,logoPath:logo.getAttribute('src'),styles:styles.map(x=>x.split('/').pop())};
               });
-              const success=measure.count===7&&!measure.overlaps.length&&!measure.clipped.length&&!errors.length;
+              const success=measure.count===7&&!measure.overlaps.length&&!measure.clipped.length&&measure.logoLoaded&&measure.logoPath==='assets/logos/logo-girard-orbite-anim.webp'&&!errors.length;
               console.log(JSON.stringify({width,height,success,...measure,errors}));
               if(!success)ok=false;
               if(width===1792||width===390)await page.screenshot({path:'/tmp/accueil-'+width+'.png'});

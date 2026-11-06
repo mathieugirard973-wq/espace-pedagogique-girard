@@ -70,8 +70,10 @@ body.home-view #app{flex:1 1 auto;min-height:0;display:grid;place-items:center;w
  animation:v29-spin-local 11s linear infinite;
 }
 .v29-core img{
- position:relative;z-index:2;display:block;width:78%;height:78%;object-fit:contain;
- filter:drop-shadow(0 10px 11px #000b);animation:v29-float-logo 4.8s ease-in-out infinite alternate;
+ position:relative;z-index:2;display:block;width:100%;height:100%;
+ border-radius:50%;object-fit:cover;
+ filter:drop-shadow(0 0 13px #e2ac4b55) drop-shadow(0 9px 12px #000a);
+ animation:v29-float-logo 4.8s ease-in-out infinite alternate;
 }
 .v29-item{
  position:absolute;left:var(--v29-x);top:var(--v29-y);z-index:5;
