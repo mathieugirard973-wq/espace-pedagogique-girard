@@ -749,3 +749,19 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
   }
   .v29-home,.fr30-page { animation: none !important; opacity: 1 !important; }
 }
+
+/* Réduction du mouvement : les sélecteurs ciblés prévalent aussi sur
+   les durées harmonisées déclarées avec !important. */
+@media (prefers-reduced-motion: reduce) {
+  .v29-ring--outer,.v29-ring--inner,
+  .fr30-ring--outer,.fr30-ring--inner,
+  .v29-core-halo,.fr30-core::before,
+  .v29-core::after,.fr30-core::after,
+  .v29-core,.fr30-core,.v29-core img,
+  .v29-card,.fr30-card,
+  .v29-home,.fr30-page {
+    animation: none !important;
+    animation-duration: 0s !important;
+  }
+  .v29-disc,.fr30-disc { transition: none !important; }
+}
