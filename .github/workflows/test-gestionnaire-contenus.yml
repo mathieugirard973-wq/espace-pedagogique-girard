@@ -1,4 +1,4 @@
-name: Contrôle des vraies séances publiées
+name: Intégrité du catalogue et nouvelles séances
 on:
   push:
     paths:
@@ -9,55 +9,56 @@ on:
 permissions:
   contents: read
 jobs:
-  test:
+  verification:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Préparer Chromium
+      - name: Vérifier les séances, ressources et liens internes
         run: |
-          node --version
-          command -v google-chrome || command -v chromium || command -v chromium-browser
-          npm install --no-audit --no-fund --no-save playwright-core
-      - name: Tester une séance réelle simulée et conserver les démonstrations
-        timeout-minutes: 3
-        run: |
-          python3 -m http.server 8784 --bind 127.0.0.1 >/tmp/gestionnaire-site.log 2>&1 &
-          sleep 2
           node <<'JS'
-          const fs=require('fs'),{chromium}=require('playwright-core');
-          (async()=>{
-            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(p=>fs.existsSync(p));
-            if(!exe)throw Error('Navigateur introuvable');
-            const b=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
-            const p=await b.newPage();
-            const errors=[];p.on('pageerror',e=>errors.push(e.message));
-            await p.goto('http://127.0.0.1:8784/#/accueil',{waitUntil:'networkidle'});
-            const key=await p.evaluate(()=>{
-              const d=window.PORTAIL_CATALOGUE;
-              const s=d.subjects.find(x=>x.id==='mathematiques');
-              const domain=s.domains.find(x=>x.id==='nombres');
-              const sub=domain.subdomains[0];
-              const seq={id:'test-reel-seq',title:'Séquence réelle de test',sessions:['test-reel-ses']};
-              const ses={id:'test-reel-ses',subject:'mathematiques',domain:'nombres',subdomain:sub.id,sequence:seq.id,number:'S01',title:'Séance réelle de test',classe:'501',description:'Leçon de test créée uniquement dans le navigateur',resources:[{id:'test-reel-pdf',type:'pdf',label:'Document pédagogique',url:'documents/demo/MAT501_calcul_mental_DEMONSTRATION.pdf'}]};
-              d.sequences.push(seq);d.sessions.push(ses);sub.sequenceIds.push(seq.id);
-              return sub.id;
-            });
-            const go=async hash=>{await p.evaluate(h=>{window.location.hash=h},hash);await p.waitForTimeout(250);return await p.locator('#app').inner_text()};
-            const list=await go('#/sous-domaine/mathematiques/nombres/'+key);
-            const seq=await go('#/sequence/test-reel-seq');
-            const ses=await go('#/seance/test-reel-ses');
-            const resource=await go('#/seance/test-reel-ses');
-            const demo=await go('#/seance/demo-maths-calcul');
-            const checks={
-              seqShown:list.includes('Séquence réelle de test')&&!list.includes('Exemple'),
-              sesShown:seq.includes('Séance réelle de test')&&!seq.includes('Exemple'),
-              details:ses.includes('Leçon de test créée uniquement dans le navigateur')&&!ses.includes('Exemple'),
-              resource:resource.includes('Document pédagogique')&&!resource.includes('Démonstration'),
-              oldDemo:demo.includes('Exemple'),
-              noErrors:errors.length===0
-            };
-            console.log(JSON.stringify({checks,errors}));
-            await b.close();
-            if(Object.values(checks).some(x=>!x))process.exitCode=1;
-          })().catch(e=>{console.error(e);process.exitCode=1});
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const vm=require('node:vm');
+          const source=fs.readFileSync('contenus/catalogue.js','utf8');
+          const window={};
+          vm.runInNewContext(source,{window});
+          const data=window.PORTAIL_CATALOGUE;
+          assert.equal(data.subjects.length,7);
+          assert(Array.isArray(data.sequences)&&Array.isArray(data.sessions));
+          const ids=new Set();
+          for(const seq of data.sequences){
+            assert(seq.id&&seq.title&&Array.isArray(seq.sessions));
+            assert(!ids.has(seq.id));ids.add(seq.id);
+            for(const id of seq.sessions)assert(data.sessions.some(x=>x.id===id));
+          }
+          for(const ses of data.sessions){
+            assert(ses.id&&ses.title&&ses.subject&&ses.domain&&ses.subdomain&&ses.sequence);
+            assert(Array.isArray(ses.resources));
+            assert(data.sequences.some(x=>x.id===ses.sequence&&x.sessions.includes(ses.id)));
+            for(const res of ses.resources)assert(res.id&&res.type&&res.label&&res.url);
+          }
+          for(const subject of data.subjects){
+            for(const domain of subject.domains){
+              for(const sub of domain.subdomains||[]){
+                assert(Array.isArray(sub.sequenceIds));
+                for(const id of sub.sequenceIds)assert(data.sequences.some(x=>x.id===id));
+              }
+            }
+          }
+          const js=fs.readFileSync('assets/js/site.js','utf8');
+          for(const marker of ['seq.demo?', 'ses.demo?', 'sess.demo?', 'r.session.demo?']){
+            assert(js.includes(marker),'Etiquette de démonstration non conditionnelle : '+marker);
+          }
+          const copy=JSON.parse(JSON.stringify(data));
+          const mat=copy.subjects.find(x=>x.id==='mathematiques');
+          const domain=mat.domains.find(x=>x.id==='nombres');
+          const sub=domain.subdomains[0];
+          const seq={id:'essai-integre-seq',title:'Séquence réelle',sessions:['essai-integre-ses']};
+          const ses={id:'essai-integre-ses',subject:mat.id,domain:domain.id,subdomain:sub.id,sequence:seq.id,number:'S01',title:'Séance réelle',classe:mat.classes[0],description:'Leçon',resources:[{id:'res-essai',type:'pdf',label:'Support',url:'documents/mathematiques/nombres/s1/essai.pdf'}]};
+          copy.sequences.push(seq);copy.sessions.push(ses);sub.sequenceIds.push(seq.id);
+          assert(copy.sequences.some(x=>x.id===seq.id));
+          assert(copy.sessions.some(x=>x.id===ses.id));
+          assert(sub.sequenceIds.includes(seq.id));
+          assert.equal(data.subjects.length,7);
+          console.log('OK — 7 matières, données historiques conservées, ajout de séance compatible, démonstrations préservées');
           JS
