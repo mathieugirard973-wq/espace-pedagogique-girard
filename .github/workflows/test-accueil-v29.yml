@@ -50,7 +50,7 @@ jobs:
                 nodes.forEach((a,i)=>{nodes.slice(i+1).forEach((b,j)=>{if(bad(a,b))overlaps.push('matières '+(i+1)+' / '+(j+i+2))}); if(bad(a,core))overlaps.push('matière '+(i+1)+' / logo')});
                 let clipped=nodes.map((r,i)=>({r,i})).filter(({r})=>r.x < -2||r.y < -2||r.right >innerWidth+2||r.bottom >innerHeight+2).map(({i})=>i+1);
                 const styles=[...document.styleSheets].map(s=>s.href||'').filter(Boolean);
-                const logo=document.querySelector('.v29-core img');return {count:nodes.length,overlaps,clipped,core,first:nodes[0],last:nodes[6],visible:!!document.querySelector('.v29-scene'),logoLoaded:logo.complete&&logo.naturalWidth===175,logoPath:logo.getAttribute('src'),styles:styles.map(x=>x.split('/').pop())};
+                const logo=document.querySelector('.v29-core img');return {count:nodes.length,overlaps,clipped,core,first:nodes[0],last:nodes[6],visible:!!document.querySelector('.v29-scene'),logoLoaded:logo.complete&&logo.naturalWidth>0&&logo.currentSrc.includes('logo-girard.png'),logoPath:logo.getAttribute('src'),styles:styles.map(x=>x.split('/').pop())};
               });
               const success=measure.count===7&&!measure.overlaps.length&&!measure.clipped.length&&measure.logoLoaded&&measure.logoPath==='assets/logos/logo-girard-orbite-anim.webp'&&!errors.length;
               console.log(JSON.stringify({width,height,success,...measure,errors}));
