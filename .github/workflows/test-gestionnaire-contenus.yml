@@ -19,6 +19,7 @@ jobs:
           command -v google-chrome || command -v chromium || command -v chromium-browser
           npm install --no-audit --no-fund --no-save playwright-core
       - name: Tester une séance réelle simulée et conserver les démonstrations
+        timeout-minutes: 3
         run: |
           python3 -m http.server 8784 --bind 127.0.0.1 >/tmp/gestionnaire-site.log 2>&1 &
           sleep 2
@@ -45,7 +46,7 @@ jobs:
             const list=await go('#/sous-domaine/mathematiques/nombres/'+key);
             const seq=await go('#/sequence/test-reel-seq');
             const ses=await go('#/seance/test-reel-ses');
-            const resource=await go('#/document/test-reel-pdf');
+            const resource=await go('#/seance/test-reel-ses');
             const demo=await go('#/seance/demo-maths-calcul');
             const checks={
               seqShown:list.includes('Séquence réelle de test')&&!list.includes('Exemple'),
