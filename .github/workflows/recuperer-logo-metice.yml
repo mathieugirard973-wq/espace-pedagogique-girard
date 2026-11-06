@@ -1,0 +1,66 @@
+name: Préparer le pictogramme officiel MÉTICE
+on:
+  push:
+    paths: ['.github/workflows/recuperer-logo-metice.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  logos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Récupérer les ressources graphiques de l'académie
+        run: |
+          mkdir -p /tmp/logos-officiels
+          python3 <<'PY'
+          import urllib.request,urllib.parse,re,html,os
+          from html.parser import HTMLParser
+          class P(HTMLParser):
+            def __init__(self):super().__init__();self.images=[]
+            def handle_starttag(self,tag,attrs):
+              if tag=='img':
+                d=dict(attrs);self.images.append((d.get('src',''),d.get('alt',''),d.get('title','')))
+          sites=[
+            'https://etab.ac-reunion.fr/liens-vers-metice-et-structures/',
+            'https://pedagogie.ac-reunion.fr/ecole-numerique/enseigner-num/ressources-numeriques/lent-metice.html',
+            'https://etab.ac-reunion.fr/clg-hippolyte-foucque/'
+          ]
+          candidates=[
+            'https://pedagogie.ac-reunion.fr/fileadmin/ANNEXES-ACADEMIQUES/CHARTE-GRAPHIQUE/Metice-Identite-visuelle/logos-METICE/ent-picto-bleu.png',
+            'https://pedagogie.ac-reunion.fr/ecole-numerique/enseigner-num/ressources-numeriques/fileadmin/ANNEXES-ACADEMIQUES/CHARTE-GRAPHIQUE/Metice-Identite-visuelle/logos-METICE/ent-picto-bleu.png'
+          ]
+          for site in sites:
+            try:
+              req=urllib.request.Request(site,headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(req,timeout=15) as r:body=r.read(1500000).decode('utf-8','replace');print('PAGE',site,r.status,len(body),flush=True)
+              p=P();p.feed(body)
+              for src,alt,title in p.images:
+                if any(key in (src+' '+alt+' '+title).lower() for key in ('metice','métice','ent-picto','logo','foucque','hippolyte')):
+                  full=urllib.parse.urljoin(site,html.unescape(src))
+                  print('IMAGE',repr(alt[:70]),full,flush=True)
+                  if 'metice' in (src+' '+alt+' '+title).lower() or 'métice' in (src+' '+alt+' '+title).lower():candidates.append(full)
+            except Exception as e:print('PAGE_ERROR',site,str(e)[:200],flush=True)
+          seen=set();success=0
+          for i,url in enumerate(candidates):
+            if url in seen:continue
+            seen.add(url)
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(req,timeout=14) as r:
+                ct=r.headers.get('Content-Type','');b=r.read(400000);status=r.status
+              ext='.png' if ('png' in ct or b.startswith(b'\x89PNG')) else '.svg' if ('svg' in ct or b.startswith(b'<svg')) else '.webp' if b.startswith(b'RIFF') else '.jpg' if b.startswith(b'\xff\xd8') else '.bin'
+              print('FETCHED',url,status,ct,len(b),'ext',ext,flush=True)
+              if ext!='.bin' and len(b)>150:
+                with open(f'/tmp/logos-officiels/metice-{success}{ext}','wb') as f:f.write(b)
+                success+=1
+            except Exception as e: print('IMAGE_ERROR',url,str(e)[:170],flush=True)
+          if not success:raise SystemExit('Aucun logo officiel téléchargé')
+          print('OFFICIAL_LOGOS',success,flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: logos-metice-academie
+          path: /tmp/logos-officiels/
+          if-no-files-found: error
+          retention-days: 7
