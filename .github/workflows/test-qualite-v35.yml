@@ -1,0 +1,93 @@
+name: Qualité globale — animations, navigation et accessibilité
+on:
+  push:
+    paths:
+      - '.github/workflows/test-qualite-v35.yml'
+      - 'index.html'
+      - 'assets/css/site-unifie-v35.css'
+      - 'assets/js/site.js'
+      - 'contenus/catalogue.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer Playwright
+        run: |
+          node --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+          npm install --no-audit --no-fund --no-save playwright-core
+      - name: Tester la navigation, le chargement et le mouvement réduit
+        run: |
+          python3 -m http.server 8788 --bind 127.0.0.1 >/tmp/site-qualite.log 2>&1 &
+          sleep 2
+          node <<'JS'
+          const fs=require('fs');
+          const {chromium}=require('playwright-core');
+          (async()=>{
+            const exe=['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(f=>fs.existsSync(f));
+            if(!exe)throw Error('Navigateur Chromium indisponible');
+            const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox']});
+            const subjects=['francais','mathematiques','sciences','histoire-geo','emc','arts','musique'];
+            const checks=[{route:'accueil',selector:'.v29-item',count:7},...subjects.map(id=>({route:'matiere/'+id,selector:'.fr30-card',count:({francais:5,mathematiques:5,sciences:5,'histoire-geo':2,emc:3,arts:3,musique:4})[id]}))];
+            const sizes=[[1366,768],[390,844]];
+            let failures=[];
+            for(const [width,height] of sizes){
+              for(const check of checks){
+                const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                page.on('response',r=>{if(r.url().startsWith('http://127.0.0.1:8788/')&&r.status()>=400)errors.push('HTTP '+r.status()+' '+r.url())});
+                await page.goto('http://127.0.0.1:8788/#/'+check.route,{waitUntil:'networkidle'});
+                const result=await page.evaluate(selector=>{
+                  const imgs=[...document.querySelectorAll('#app img')].map(e=>({src:e.currentSrc,ok:e.complete&&e.naturalWidth>0}));
+                  const css=[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.getAttribute('href'));
+                  const links=[...document.querySelectorAll('#app a')].map(x=>x.getAttribute('href'));
+                  const visible=[...document.querySelectorAll(selector)].filter(e=>{const x=e.getBoundingClientRect();return x.width>0&&x.height>0});
+                  return {count:visible.length,css,imgs,links,view:document.body.className,scroll:document.documentElement.scrollWidth>innerWidth+2};
+                },check.selector);
+                const ok=result.count===check.count&&result.css.length===1&&result.css[0].includes('site-unifie-v35.css')&&result.imgs.every(x=>x.ok)&&result.links.every(x=>x&&x.startsWith('#/'))&&!result.scroll&&!errors.length;
+                if(!ok)failures.push({route:check.route,width,height,expected:check.count,...result,errors});
+                console.log(JSON.stringify({route:check.route,width,height,ok,icons:result.imgs.length,css:result.css.length,errors}));
+                await page.close();
+              }
+            }
+            for(const motion of ['reduce','no-preference']){
+              const page=await browser.newPage({viewport:{width:1366,height:768},reducedMotion:motion});
+              await page.goto('http://127.0.0.1:8788/#/accueil',{waitUntil:'networkidle'});
+              const result=await page.evaluate(()=>{
+                const image=document.querySelector('.v29-core picture img');
+                const ring=document.querySelector('.v29-ring--outer');
+                return {image:image.currentSrc.split('/').pop(),ok:image.complete&&image.naturalWidth>0,motion:matchMedia('(prefers-reduced-motion: reduce)').matches,period:getComputedStyle(ring).animationDuration};
+              });
+              const ok=result.ok&&(motion==='reduce'?result.image.includes('logo-girard.png')&&parseFloat(result.period)<.01:result.image.includes('logo-girard-orbite-anim.webp')&&result.period.includes('36s'));
+              if(!ok)failures.push({motion,...result});
+              console.log(JSON.stringify({motion,ok,...result}));
+              await page.close();
+            }
+            const key=await browser.newPage({viewport:{width:1366,height:768}});
+            await key.goto('http://127.0.0.1:8788/#/accueil',{waitUntil:'networkidle'});
+            await key.keyboard.press('Tab');
+            const focus=await key.evaluate(()=>({tag:document.activeElement.tagName,href:document.activeElement.getAttribute('href'),outline:getComputedStyle(document.activeElement).outlineStyle}));
+            const focusOK=focus.tag==='A'&&focus.href==='#contenu';
+            console.log(JSON.stringify({keyboardFocus:focus,focusOK}));
+            if(!focusOK)failures.push({keyboardFocus:focus});
+            await key.close();
+            for(const route of ['#/domaine/francais/orthographe','#/domaine/mathematiques/nombres','#/domaine/sciences/matiere','#/domaine/emc/alterite','#/domaine/arts/representation','#/domaine/musique/ecouter','#/jeux']){
+              const page=await browser.newPage();
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:8788/'+route,{waitUntil:'networkidle'});
+              const state=await page.evaluate(()=>({title:document.querySelector('#app h1,#app h2')?.textContent||'',hasApp:document.querySelector('#app').children.length>0}));
+              const ok=state.hasApp&&!errors.length&&!!state.title;
+              if(!ok)failures.push({route,state,errors});
+              console.log(JSON.stringify({route,ok,title:state.title}));
+              await page.close();
+            }
+            await browser.close();
+            if(failures.length){console.error('FAILED CHECKS',JSON.stringify(failures,null,2));process.exitCode=1}
+            else console.log('GLOBAL QUALITY CHECKS PASSED');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
