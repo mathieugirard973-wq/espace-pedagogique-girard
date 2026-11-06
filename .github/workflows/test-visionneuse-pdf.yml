@@ -89,7 +89,7 @@ jobs:
             assert(first.download);
             await page.locator('[data-pdf-action="zoom-in"]').click();
             await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='125 %');
-            await page.waitForFunction(w=>document.querySelector('.pdf-page-canvas').width>w,{timeout:10000},first.canvas);
+            await page.waitForFunction(w=>document.querySelector('.pdf-page-canvas')?.width>w,first.canvas,{timeout:10000});
             const expanded=await page.locator('.pdf-page-canvas').evaluate(el=>el.width);
             assert(expanded>first.canvas);
             await page.locator('[data-pdf-action="fit"]').click();
