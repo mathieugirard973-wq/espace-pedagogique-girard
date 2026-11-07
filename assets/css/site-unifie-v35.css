@@ -920,6 +920,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
   transition:background .18s ease,border-color .18s ease,transform .18s ease;
 }
 .pdf-reader-control{font-size:24px;min-width:41px;padding:0 8px;line-height:1}
+.pdf-reader-fit-buttons{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;white-space:nowrap}
 .pdf-reader-action:hover,.pdf-reader-control:hover{background:#284c72;border-color:#e6bf6b}
 .pdf-reader-action:focus-visible,.pdf-reader-control:focus-visible,
 .pdf-reader-page-label input:focus-visible,.pdf-reader-stage:focus-visible,.pdf-reader-doc-link:focus-visible{

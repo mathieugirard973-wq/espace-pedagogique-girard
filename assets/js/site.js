@@ -156,11 +156,13 @@ function gamesPage(){
           '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-out" aria-label="Réduire le zoom" disabled>−</button>'+
           '<span class="pdf-reader-zoom" data-pdf-zoom-label aria-live="off">100 %</span>'+
           '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-in" aria-label="Augmenter le zoom" disabled>+</button>'+
-          '<button type="button" class="pdf-reader-action pdf-reader-fit" data-pdf-action="fit" aria-pressed="true" title="Adapter le document à la largeur" disabled>Adapter</button>'+
+          '<div class="pdf-reader-fit-buttons">'+
+          '<button type="button" class="pdf-reader-action pdf-reader-fit" data-pdf-action="fit" aria-pressed="true" title="Afficher le PDF sur toute la largeur disponible" disabled>Largeur de page</button>'+
+          '<button type="button" class="pdf-reader-action pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la feuille PDF sur l’écran" disabled>Page entière</button>'+
+          '</div>'+
 
         '</div>'+
         '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--actions">'+
-          '<button type="button" class="pdf-reader-action pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la feuille PDF sur l’écran" disabled>Page entière</button>'+
           '<button type="button" class="pdf-reader-action" data-pdf-action="fullscreen">Plein écran</button>'+
           '<button type="button" class="pdf-reader-action" data-pdf-action="print" disabled>Imprimer</button>'+
           '<a class="pdf-reader-action pdf-reader-action--gold" href="'+escape(r.url)+'" download>Télécharger</a>'+

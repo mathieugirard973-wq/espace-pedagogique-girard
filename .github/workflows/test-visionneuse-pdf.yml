@@ -99,6 +99,14 @@ jobs:
             await page.waitForFunction(w=>document.querySelector('.pdf-page-canvas')?.width>w,first.canvas,{timeout:10000});
             const expanded=await page.locator('.pdf-page-canvas').evaluate(el=>el.width);
             assert(expanded>first.canvas);
+            const fitLabel=await page.locator('[data-pdf-action="fit"]').innerText();
+            assert.equal(fitLabel,'Largeur de page');
+            const fitPlacement=await page.evaluate(()=>{
+              const a=document.querySelector('[data-pdf-action="fit"]');
+              const b=document.querySelector('[data-pdf-action="fit-page"]');
+              return {adjacent:a.nextElementSibling===b,grouped:a.parentElement===b.parentElement,rowDelta:Math.abs(a.getBoundingClientRect().top-b.getBoundingClientRect().top),right:a.getBoundingClientRect().right,left:b.getBoundingClientRect().left};
+            });
+            assert(fitPlacement.adjacent&&fitPlacement.grouped&&fitPlacement.rowDelta<2&&fitPlacement.left>=fitPlacement.right,JSON.stringify(fitPlacement));
             await page.locator('[data-pdf-action="fit"]').click();
             await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='100 %');
             console.log('TEST étape : vue page entière');
@@ -152,6 +160,12 @@ jobs:
               await mobile.goto('http://127.0.0.1:8795/#/document/pdf-energie',{waitUntil:'domcontentloaded'});
               await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
               assert(await mobile.locator('[data-pdf-action="fit-page"]').isVisible(),'Bouton Page entière invisible sur écran '+width);
+              const buttonsFit=await mobile.evaluate(()=>{
+                const a=document.querySelector('[data-pdf-action="fit"]').getBoundingClientRect();
+                const b=document.querySelector('[data-pdf-action="fit-page"]').getBoundingClientRect();
+                return {sameRow:Math.abs(a.top-b.top)<2,rightOf:b.left>=a.right};
+              });
+              assert(buttonsFit.sameRow&&buttonsFit.rightOf,'Boutons non adjacents sur écran '+width+': '+JSON.stringify(buttonsFit));
               await mobile.locator('[data-pdf-action="fit-page"]').click();
               await mobile.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
               const mobileFit=await mobile.evaluate(()=>{const stage=document.querySelector('[data-pdf-stage]');return {h:stage.clientHeight,scrollH:stage.scrollHeight,w:stage.clientWidth,scrollW:stage.scrollWidth};});
