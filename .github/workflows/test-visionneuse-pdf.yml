@@ -176,9 +176,10 @@ jobs:
               await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
               assert(await mobile.locator('[data-pdf-action="fit-page"]').isVisible(),'Bouton Page entière invisible sur écran '+width);
               assert(await mobile.locator('.pdf-reader-capsule').isVisible(),'Capsule invisible sur écran '+width);
-              for(const label of ['Plein écran','Imprimer','Télécharger']){
-                assert(await mobile.getByRole('button',{name:label,exact:true}).isVisible().catch(()=>label==='Télécharger'&&mobile.locator('.pdf-reader-download').isVisible()),'Commande absente : '+label+' sur écran '+width);
+              for(const label of ['Plein écran','Imprimer']){
+                assert(await mobile.getByRole('button',{name:label,exact:true}).isVisible(),'Commande absente : '+label+' sur écran '+width);
               }
+              assert(await mobile.getByRole('link',{name:'Télécharger',exact:true}).isVisible(),'Lien de téléchargement absent sur écran '+width);
               const buttonsFit=await mobile.evaluate(()=>{
                 const a=document.querySelector('[data-pdf-action="fit"]').getBoundingClientRect();
                 const b=document.querySelector('[data-pdf-action="fit-page"]').getBoundingClientRect();
