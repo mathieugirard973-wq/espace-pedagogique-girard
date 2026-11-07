@@ -101,9 +101,22 @@ jobs:
             assert(expanded>first.canvas);
             await page.locator('[data-pdf-action="fit"]').click();
             await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='100 %');
+            console.log('TEST étape : vue page entière');
+            await page.locator('[data-pdf-action="fit-page"]').click();
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-action="fit-page"]').getAttribute('aria-pressed')==='true');
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
+            const whole=await page.evaluate(()=>{
+              const stage=document.querySelector('[data-pdf-stage]'),sheet=document.querySelector('.pdf-page-canvas');
+              return {h:stage.clientHeight,scrollH:stage.scrollHeight,w:stage.clientWidth,scrollW:stage.scrollWidth,sheetH:sheet.getBoundingClientRect().height,zoom:document.querySelector('[data-pdf-zoom-label]').textContent};
+            });
+            assert(whole.scrollH<=whole.h+2&&whole.scrollW<=whole.w+2,JSON.stringify(whole));
+            assert(whole.sheetH<whole.h,JSON.stringify(whole));
             await page.locator('[data-pdf-action="fullscreen"]').click();
             const full=await page.evaluate(()=>document.fullscreenElement?.id==='pdf-reader'||document.getElementById('pdf-reader').classList.contains('pdf-simulated-fullscreen'));
             assert(full,'Plein écran non activé');
+            await page.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
+            const wholeFull=await page.evaluate(()=>{const stage=document.querySelector('[data-pdf-stage]');return {h:stage.clientHeight,scrollH:stage.scrollHeight,w:stage.clientWidth,scrollW:stage.scrollWidth};});
+            assert(wholeFull.scrollH<=wholeFull.h+2&&wholeFull.scrollW<=wholeFull.w+2,JSON.stringify(wholeFull));
             await page.locator('[data-pdf-action="fullscreen"]').click();
             console.log('TEST étape : deuxième document');
             await page.locator('.pdf-reader-doc-side--next a').click();
@@ -137,6 +150,10 @@ jobs:
               const mobile=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
               await mobile.goto('http://127.0.0.1:8795/#/document/pdf-energie',{waitUntil:'domcontentloaded'});
               await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
+              await mobile.locator('[data-pdf-action="fit-page"]').click();
+              await mobile.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
+              const mobileFit=await mobile.evaluate(()=>{const stage=document.querySelector('[data-pdf-stage]');return {h:stage.clientHeight,scrollH:stage.scrollHeight,w:stage.clientWidth,scrollW:stage.scrollWidth};});
+              assert(mobileFit.scrollH<=mobileFit.h+2&&mobileFit.scrollW<=mobileFit.w+2,JSON.stringify(mobileFit));
               const state=await mobile.evaluate(()=>{
                 const root=document.querySelector('.pdf-reader').getBoundingClientRect();
                 const buttons=[...document.querySelectorAll('.pdf-reader-control,.pdf-reader-action')].filter(el=>el.getClientRects().length&&getComputedStyle(el).display!=='none');

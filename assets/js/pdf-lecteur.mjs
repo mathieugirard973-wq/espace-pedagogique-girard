@@ -27,7 +27,11 @@ function updateControls(state) {
   if (previous) previous.disabled = !count || state.page <= 1;
   if (next) next.disabled = !count || state.page >= count;
   if (zoomLabel) zoomLabel.textContent = Math.round(state.zoom * 100) + ' %';
-  for (const name of ['zoom-in','zoom-out','fit','print']) {
+  for (const name of ['fit','fit-page']) {
+    const btn = $(state.root, '[data-pdf-action="' + name + '"]');
+    if (btn) btn.setAttribute('aria-pressed', String(state.fitMode === (name === 'fit-page' ? 'page' : 'width')));
+  }
+  for (const name of ['zoom-in','zoom-out','fit','fit-page','print']) {
     const btn = $(state.root, '[data-pdf-action="' + name + '"]');
     if (btn) btn.disabled = !count;
   }
@@ -41,7 +45,7 @@ function useNativeFallback(state, message) {
   if (fallback) fallback.hidden = false;
   if (frame) frame.src = state.url + '#view=FitH';
   announce(state, message + ' Le lecteur PDF du navigateur reste disponible.');
-  const buttons = state.root.querySelectorAll('[data-pdf-action="zoom-in"],[data-pdf-action="zoom-out"],[data-pdf-action="fit"],[data-pdf-action="prev-page"],[data-pdf-action="next-page"]');
+  const buttons = state.root.querySelectorAll('[data-pdf-action="zoom-in"],[data-pdf-action="zoom-out"],[data-pdf-action="fit"],[data-pdf-action="fit-page"],[data-pdf-action="prev-page"],[data-pdf-action="next-page"]');
   buttons.forEach(button => { button.disabled = true; });
   const printButton = $(state.root, '[data-pdf-action="print"]');
   if (printButton) printButton.disabled = false;
@@ -76,8 +80,19 @@ async function renderPage(state) {
     const container = $(state.root, '[data-pdf-canvas-host]');
     if (!stage || !container) return;
     const atOne = page.getViewport({scale:1});
-    const available = Math.max(200, stage.clientWidth - 34);
-    const scale = Math.min(3.5, Math.max(.25, available / atOne.width * state.zoom));
+    // Les 16 px de marge intérieure du support PDF doivent rester visibles.
+    const availableWidth = Math.max(1, stage.clientWidth - 34);
+    const availableHeight = Math.max(1, stage.clientHeight - 34);
+    const widthScale = availableWidth / atOne.width;
+    let scale;
+    if (state.fitMode === 'page') {
+      // Conserver toute la feuille dans la zone de lecture, même après redimensionnement.
+      scale = Math.min(3.5, Math.max(.05, Math.min(widthScale, availableHeight / atOne.height)));
+      state.zoom = scale / widthScale;
+      updateControls(state);
+    } else {
+      scale = Math.min(3.5, Math.max(.05, widthScale * state.zoom));
+    }
     const viewport = page.getViewport({scale});
     const ratio = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(16000000 / Math.max(1, viewport.width * viewport.height)));
     const canvas = document.createElement('canvas');
@@ -123,7 +138,8 @@ function pageTo(state, next) {
 
 function zoomTo(state, next) {
   if (!state.document) return;
-  state.zoom = Math.max(.5, Math.min(3, Math.round(next * 100) / 100));
+  state.fitMode = 'manual';
+  state.zoom = Math.max(.1, Math.min(3, Math.round(next * 100) / 100));
   updateControls(state);
   renderPage(state);
 }
@@ -230,7 +246,8 @@ function handleControls(state, e) {
   if (action === 'next-page') pageTo(state,state.page + 1);
   if (action === 'zoom-in') zoomTo(state,state.zoom * 1.25);
   if (action === 'zoom-out') zoomTo(state,state.zoom / 1.25);
-  if (action === 'fit') zoomTo(state,1);
+  if (action === 'fit') {state.fitMode = 'width';state.zoom = 1;renderPage(state);}
+  if (action === 'fit-page') {state.fitMode = 'page';renderPage(state);}
   if (action === 'fullscreen') toggleFullscreen(state);
   if (action === 'print') printAll(state);
 }
@@ -264,6 +281,7 @@ export async function mount() {
     title:root.dataset.pdfTitle,
     page:1,
     zoom:1,
+    fitMode:'width',
     document:null,
     loadingTask:null,
     renderTask:null,

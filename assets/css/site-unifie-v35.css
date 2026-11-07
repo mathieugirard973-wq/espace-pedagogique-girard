@@ -926,6 +926,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
   outline:3px solid #efc75f;outline-offset:2px
 }
 .pdf-reader-control:disabled,.pdf-reader-action:disabled{opacity:.42;cursor:not-allowed;transform:none}
+ .pdf-reader-action[aria-pressed="true"]{border-color:#e9bf66;background:#2b4c68;color:#f8dda0}
 .pdf-reader-action--gold{background:#b88838;color:#0b1830;border-color:#e4b65a}
 .pdf-reader-action--gold:hover{background:#ecc66e;color:#081a33}
 .pdf-reader-page-label,.pdf-reader-zoom{font-size:12px;font-weight:740;color:#dbe7f8;white-space:nowrap}
@@ -1010,7 +1011,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
 @media(max-width:400px){
   .pdf-reader-toolbar{gap:6px}
   .pdf-reader-action{font-size:11px;padding:0 8px}
-  .pdf-reader-fit{display:none}
+  .pdf-reader-fit,.pdf-reader-fit-page{padding:0 7px}
 }
 @media(prefers-reduced-motion:reduce){
   .pdf-reader-control,.pdf-reader-action{transition:none!important}
