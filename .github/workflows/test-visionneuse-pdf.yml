@@ -102,6 +102,7 @@ jobs:
             await page.locator('[data-pdf-action="fit"]').click();
             await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='100 %');
             console.log('TEST étape : vue page entière');
+            assert(await page.locator('[data-pdf-action="fit-page"]').isVisible(),'Bouton Page entière invisible sur ordinateur');
             await page.locator('[data-pdf-action="fit-page"]').click();
             await page.waitForFunction(()=>document.querySelector('[data-pdf-action="fit-page"]').getAttribute('aria-pressed')==='true');
             await page.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
@@ -150,6 +151,7 @@ jobs:
               const mobile=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
               await mobile.goto('http://127.0.0.1:8795/#/document/pdf-energie',{waitUntil:'domcontentloaded'});
               await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
+              assert(await mobile.locator('[data-pdf-action="fit-page"]').isVisible(),'Bouton Page entière invisible sur écran '+width);
               await mobile.locator('[data-pdf-action="fit-page"]').click();
               await mobile.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
               const mobileFit=await mobile.evaluate(()=>{const stage=document.querySelector('[data-pdf-stage]');return {h:stage.clientHeight,scrollH:stage.scrollHeight,w:stage.clientWidth,scrollW:stage.scrollWidth};});

@@ -157,9 +157,10 @@ function gamesPage(){
           '<span class="pdf-reader-zoom" data-pdf-zoom-label aria-live="off">100 %</span>'+
           '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-in" aria-label="Augmenter le zoom" disabled>+</button>'+
           '<button type="button" class="pdf-reader-action pdf-reader-fit" data-pdf-action="fit" aria-pressed="true" title="Adapter le document à la largeur" disabled>Adapter</button>'+
-           '<button type="button" class="pdf-reader-action pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Voir toute la page, sans défilement" disabled>Page entière</button>'+
+
         '</div>'+
         '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--actions">'+
+          '<button type="button" class="pdf-reader-action pdf-reader-action--gold pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la feuille PDF sur l’écran" disabled>Page entière</button>'+
           '<button type="button" class="pdf-reader-action" data-pdf-action="fullscreen">Plein écran</button>'+
           '<button type="button" class="pdf-reader-action" data-pdf-action="print" disabled>Imprimer</button>'+
           '<a class="pdf-reader-action pdf-reader-action--gold" href="'+escape(r.url)+'" download>Télécharger</a>'+
@@ -190,7 +191,7 @@ function infoPage(){
  function render(){window.PedagogicalPdfViewer?.dispose();const parts=routeParts();const route=parts[0];document.body.classList.toggle('home-view',route==='accueil');document.body.classList.toggle('subject-view',route==='matiere'&&!['francais','mathematiques','sciences','histoire-geo','emc','arts','musique'].includes(parts[1])&&!!bySubject(parts[1]));document.body.classList.toggle('francais-view',route==='matiere'&&parts[1]==='francais');document.body.classList.toggle('mathematiques-view',route==='matiere'&&parts[1]==='mathematiques');document.body.classList.toggle('sciences-view',route==='matiere'&&parts[1]==='sciences');document.body.classList.toggle('orb33-view',route==='matiere'&&['histoire-geo','emc','arts','musique'].includes(parts[1]));document.body.classList.toggle('domain-view',route==='domaine'&&!!byDomain(bySubject(parts[1]),parts[2]));let html='';let current='accueil';try{switch(route){case'accueil':html=index();break;case'matiere':{const s=bySubject(parts[1]);if(!s)return notFound();current=s.id;html=subjectPage(s);break;}case'domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]);if(!d)return notFound();current=s.id;html=domainPage(s,d);break;}case'sous-domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]),x=bySub(d,parts[3]);if(!x)return notFound();current=s.id;html=subPage(s,d,x);break;}case'sequence':{const seq=bySequence(parts[1]);if(!seq)return notFound();const ss=bySession(seq.sessions[0]);current=ss.subject;html=seqPage(seq);break;}case'seance':{const ss=bySession(parts[1]);if(!ss)return notFound();current=ss.subject;html=sessionPage(ss);break;}case'ressources':current='ressources';html=allResources();break;case'jeux':current='jeux';html=gamesPage();break;case'document':{let r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'pdf');break;}case'application':{let r=resourceById(parts[1]);current='jeux';html=viewer(parts[1],'html');break;}case'media':{const r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'media');break;}case'a-propos':html=infoPage();break;default:return notFound()}APP.innerHTML=html;nav(current);
   if(route==='document'&&document.getElementById('pdf-reader')){
     const requestedId=parts[1];
-    import(new URL('assets/js/pdf-lecteur.mjs?v=2',document.baseURI).href).then(module=>{
+    import(new URL('assets/js/pdf-lecteur.mjs?v=3',document.baseURI).href).then(module=>{
       if(routeParts()[0]==='document'&&routeParts()[1]===requestedId&&document.getElementById('pdf-reader'))module.mount();
     }).catch(error=>{
       console.error('Chargement de la visionneuse',error);

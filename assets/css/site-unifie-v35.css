@@ -929,6 +929,8 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
  .pdf-reader-action[aria-pressed="true"]{border-color:#e9bf66;background:#2b4c68;color:#f8dda0}
 .pdf-reader-action--gold{background:#b88838;color:#0b1830;border-color:#e4b65a}
 .pdf-reader-action--gold:hover{background:#ecc66e;color:#081a33}
+.pdf-reader-fit-page{font-weight:850;border:2px solid #edc471;background:#e1b85f;color:#0b1d33;box-shadow:0 0 0 2px #e1b85f22}
+.pdf-reader-fit-page:hover{background:#f5d78b;color:#071c32}
 .pdf-reader-page-label,.pdf-reader-zoom{font-size:12px;font-weight:740;color:#dbe7f8;white-space:nowrap}
 .pdf-reader-page-label input{
   width:48px;min-height:37px;padding:5px 2px;
