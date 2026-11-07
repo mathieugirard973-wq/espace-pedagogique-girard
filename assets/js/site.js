@@ -36,6 +36,14 @@
  tablet:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M10 18h4"/>',
  info:'<circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-10h.01"/>',
  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4"/>'};
+ Object.assign(ICONS,{
+   'pdf-prev':'<path d="m15 18-6-6 6-6"/>',
+   'pdf-next':'<path d="m9 18 6-6-6-6"/>',
+   'pdf-minus':'<path d="M5 12h14"/>',
+   'pdf-plus':'<path d="M5 12h14M12 5v14"/>',
+   'pdf-full':'<path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/>',
+   'pdf-print':'<path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6zM17 12h.01"/>'
+ });
  const icon=n=>`<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||ICONS.book}</svg>`;
  const escape=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  const a=(path,label,cls='',ico='')=>`<a href="#/${path}" class="${cls}">${ico?icon(ico):''}${escape(label)}</a>`;
@@ -147,25 +155,30 @@ function gamesPage(){
     const nextLink=after?docLink(after):'<span class="pdf-reader-doc-empty">Dernier document</span>';
     inner='<section class="pdf-reader" id="pdf-reader" data-pdf-url="'+escape(r.url)+'" data-pdf-title="'+escape(r.label)+'" aria-label="Visionneuse pédagogique PDF">'+
       '<div class="pdf-reader-toolbar" role="toolbar" aria-label="Outils du document PDF">'+
-        '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--pages">'+
-          '<button type="button" class="pdf-reader-control" data-pdf-action="prev-page" data-pdf-prev-page aria-label="Page précédente" disabled>‹</button>'+
-          '<label class="pdf-reader-page-label" for="pdf-reader-page">Page <input type="number" id="pdf-reader-page" data-pdf-page value="1" min="1" max="1" inputmode="numeric" aria-label="Numéro de page" disabled> sur <span data-pdf-pages>—</span></label>'+
-          '<button type="button" class="pdf-reader-control" data-pdf-action="next-page" data-pdf-next-page aria-label="Page suivante" disabled>›</button>'+
-        '</div>'+
-        '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--zoom">'+
-          '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-out" aria-label="Réduire le zoom" disabled>−</button>'+
-          '<span class="pdf-reader-zoom" data-pdf-zoom-label aria-live="off">100 %</span>'+
-          '<button type="button" class="pdf-reader-control" data-pdf-action="zoom-in" aria-label="Augmenter le zoom" disabled>+</button>'+
-          '<div class="pdf-reader-fit-buttons">'+
-          '<button type="button" class="pdf-reader-action pdf-reader-fit" data-pdf-action="fit" aria-pressed="true" title="Afficher le PDF sur toute la largeur disponible" disabled>Largeur de page</button>'+
-          '<button type="button" class="pdf-reader-action pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la feuille PDF sur l’écran" disabled>Page entière</button>'+
+        '<div class="pdf-reader-capsule">'+
+          '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--pages" aria-label="Navigation entre les pages">'+
+            '<button type="button" class="pdf-reader-control pdf-reader-icon-btn" data-pdf-action="prev-page" data-pdf-prev-page aria-label="Page précédente" title="Page précédente" disabled>'+icon('pdf-prev')+'</button>'+
+            '<label class="pdf-reader-page-label" for="pdf-reader-page"><span class="pdf-reader-sr-only">Page</span><input type="number" id="pdf-reader-page" data-pdf-page value="1" min="1" max="1" inputmode="numeric" aria-label="Numéro de page" disabled><span class="pdf-reader-page-separator">/</span><span data-pdf-pages>—</span></label>'+
+            '<button type="button" class="pdf-reader-control pdf-reader-icon-btn" data-pdf-action="next-page" data-pdf-next-page aria-label="Page suivante" title="Page suivante" disabled>'+icon('pdf-next')+'</button>'+
           '</div>'+
-
-        '</div>'+
-        '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--actions">'+
-          '<button type="button" class="pdf-reader-action" data-pdf-action="fullscreen">Plein écran</button>'+
-          '<button type="button" class="pdf-reader-action" data-pdf-action="print" disabled>Imprimer</button>'+
-          '<a class="pdf-reader-action pdf-reader-action--gold" href="'+escape(r.url)+'" download>Télécharger</a>'+
+          '<span class="pdf-reader-divider" aria-hidden="true"></span>'+
+          '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--zoom" aria-label="Zoom du document">'+
+            '<button type="button" class="pdf-reader-control pdf-reader-icon-btn" data-pdf-action="zoom-out" aria-label="Réduire le zoom" title="Réduire le zoom" disabled>'+icon('pdf-minus')+'</button>'+
+            '<span class="pdf-reader-zoom" data-pdf-zoom-label>100 %</span>'+
+            '<button type="button" class="pdf-reader-control pdf-reader-icon-btn" data-pdf-action="zoom-in" aria-label="Augmenter le zoom" title="Augmenter le zoom" disabled>'+icon('pdf-plus')+'</button>'+
+          '</div>'+
+          '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--modes" aria-label="Mode d’affichage">'+
+            '<div class="pdf-reader-fit-buttons">'+
+              '<button type="button" class="pdf-reader-action pdf-reader-mode pdf-reader-fit" data-pdf-action="fit" aria-pressed="true" title="Adapter à la largeur" disabled>Largeur de page</button>'+
+              '<button type="button" class="pdf-reader-action pdf-reader-mode pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la page" disabled>Page entière</button>'+
+            '</div>'+
+          '</div>'+
+          '<span class="pdf-reader-divider pdf-reader-divider--actions" aria-hidden="true"></span>'+
+          '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--actions" aria-label="Actions sur le document">'+
+            '<button type="button" class="pdf-reader-action pdf-reader-icon-btn" data-pdf-action="fullscreen" aria-label="Plein écran" aria-pressed="false" title="Plein écran">'+icon('pdf-full')+'<span class="pdf-reader-sr-only pdf-reader-fullscreen-label">Plein écran</span></button>'+
+            '<button type="button" class="pdf-reader-action pdf-reader-icon-btn" data-pdf-action="print" aria-label="Imprimer" title="Imprimer" disabled>'+icon('pdf-print')+'</button>'+
+            '<a class="pdf-reader-action pdf-reader-icon-btn pdf-reader-download" href="'+escape(r.url)+'" download aria-label="Télécharger" title="Télécharger">'+icon('download')+'</a>'+
+          '</div>'+
         '</div>'+
       '</div>'+
       '<p class="pdf-reader-status" data-pdf-status role="status" aria-live="polite">Chargement du document…</p>'+
@@ -193,7 +206,7 @@ function infoPage(){
  function render(){window.PedagogicalPdfViewer?.dispose();const parts=routeParts();const route=parts[0];document.body.classList.toggle('home-view',route==='accueil');document.body.classList.toggle('subject-view',route==='matiere'&&!['francais','mathematiques','sciences','histoire-geo','emc','arts','musique'].includes(parts[1])&&!!bySubject(parts[1]));document.body.classList.toggle('francais-view',route==='matiere'&&parts[1]==='francais');document.body.classList.toggle('mathematiques-view',route==='matiere'&&parts[1]==='mathematiques');document.body.classList.toggle('sciences-view',route==='matiere'&&parts[1]==='sciences');document.body.classList.toggle('orb33-view',route==='matiere'&&['histoire-geo','emc','arts','musique'].includes(parts[1]));document.body.classList.toggle('domain-view',route==='domaine'&&!!byDomain(bySubject(parts[1]),parts[2]));let html='';let current='accueil';try{switch(route){case'accueil':html=index();break;case'matiere':{const s=bySubject(parts[1]);if(!s)return notFound();current=s.id;html=subjectPage(s);break;}case'domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]);if(!d)return notFound();current=s.id;html=domainPage(s,d);break;}case'sous-domaine':{const s=bySubject(parts[1]),d=byDomain(s,parts[2]),x=bySub(d,parts[3]);if(!x)return notFound();current=s.id;html=subPage(s,d,x);break;}case'sequence':{const seq=bySequence(parts[1]);if(!seq)return notFound();const ss=bySession(seq.sessions[0]);current=ss.subject;html=seqPage(seq);break;}case'seance':{const ss=bySession(parts[1]);if(!ss)return notFound();current=ss.subject;html=sessionPage(ss);break;}case'ressources':current='ressources';html=allResources();break;case'jeux':current='jeux';html=gamesPage();break;case'document':{let r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'pdf');break;}case'application':{let r=resourceById(parts[1]);current='jeux';html=viewer(parts[1],'html');break;}case'media':{const r=resourceById(parts[1]);current=r?.subject||'ressources';html=viewer(parts[1],'media');break;}case'a-propos':html=infoPage();break;default:return notFound()}APP.innerHTML=html;nav(current);
   if(route==='document'&&document.getElementById('pdf-reader')){
     const requestedId=parts[1];
-    import(new URL('assets/js/pdf-lecteur.mjs?v=3',document.baseURI).href).then(module=>{
+    import(new URL('assets/js/pdf-lecteur.mjs?v=4',document.baseURI).href).then(module=>{
       if(routeParts()[0]==='document'&&routeParts()[1]===requestedId&&document.getElementById('pdf-reader'))module.mount();
     }).catch(error=>{
       console.error('Chargement de la visionneuse',error);

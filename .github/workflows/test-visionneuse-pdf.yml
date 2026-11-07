@@ -86,13 +86,26 @@ jobs:
               canvas:document.querySelector('.pdf-page-canvas').width,
               zoom:document.querySelector('[data-pdf-zoom-label]').textContent,
               next:document.querySelector('.pdf-reader-doc-side--next a')?.href,
-              download:document.querySelector('.pdf-reader-action--gold')?.hasAttribute('download'),
+              download:document.querySelector('.pdf-reader-download')?.hasAttribute('download'),
               fallback:document.querySelector('[data-pdf-native]').hidden
             }));
             assert(first.canvas>200&&first.fallback,JSON.stringify(first));
             assert.equal(first.zoom,'100 %');
             assert(first.next.includes('pdf-deux-pages-test'));
             assert(first.download);
+            console.log('TEST étape : capsule et commandes accessibles');
+            const capsule=await page.evaluate(()=>{
+              const el=document.querySelector('.pdf-reader-capsule');
+              const modes=[...document.querySelectorAll('.pdf-reader-mode')];
+              const actions=[...document.querySelectorAll('.pdf-reader-toolgroup--actions .pdf-reader-icon-btn')];
+              return {exists:!!el,radius:el?parseFloat(getComputedStyle(el).borderTopLeftRadius):0,
+                labelModes:modes.map(b=>b.textContent.trim()),actions:actions.map(b=>b.getAttribute('aria-label')),
+                allIcons:actions.every(b=>!!b.querySelector('svg')),overflow:document.documentElement.scrollWidth>innerWidth+2};
+            });
+            assert(capsule.exists&&capsule.radius>=25&&!capsule.overflow,JSON.stringify(capsule));
+            assert.deepEqual(capsule.labelModes,['Largeur de page','Page entière']);
+            assert.deepEqual(capsule.actions,['Plein écran','Imprimer','Télécharger']);
+            assert(capsule.allIcons,JSON.stringify(capsule));
             console.log('TEST étape : zoom');
             await page.locator('[data-pdf-action="zoom-in"]').click();
             await page.waitForFunction(()=>document.querySelector('[data-pdf-zoom-label]').textContent==='125 %');
@@ -123,6 +136,8 @@ jobs:
             await page.locator('[data-pdf-action="fullscreen"]').click();
             const full=await page.evaluate(()=>document.fullscreenElement?.id==='pdf-reader'||document.getElementById('pdf-reader').classList.contains('pdf-simulated-fullscreen'));
             assert(full,'Plein écran non activé');
+            assert.equal(await page.locator('[data-pdf-action="fullscreen"]').getAttribute('aria-label'),'Quitter le plein écran');
+            assert.equal(await page.locator('[data-pdf-action="fullscreen"] svg').count(),1);
             await page.waitForFunction(()=>document.querySelector('[data-pdf-status]').textContent.includes('affichée'));
             const wholeFull=await page.evaluate(()=>{const stage=document.querySelector('[data-pdf-stage]');return {h:stage.clientHeight,scrollH:stage.scrollHeight,w:stage.clientWidth,scrollW:stage.scrollWidth};});
             assert(wholeFull.scrollH<=wholeFull.h+2&&wholeFull.scrollW<=wholeFull.w+2,JSON.stringify(wholeFull));
@@ -160,6 +175,10 @@ jobs:
               await mobile.goto('http://127.0.0.1:8795/#/document/pdf-energie',{waitUntil:'domcontentloaded'});
               await mobile.locator('.pdf-page-canvas').waitFor({timeout:30000});
               assert(await mobile.locator('[data-pdf-action="fit-page"]').isVisible(),'Bouton Page entière invisible sur écran '+width);
+              assert(await mobile.locator('.pdf-reader-capsule').isVisible(),'Capsule invisible sur écran '+width);
+              for(const label of ['Plein écran','Imprimer','Télécharger']){
+                assert(await mobile.getByRole('button',{name:label,exact:true}).isVisible().catch(()=>label==='Télécharger'&&mobile.locator('.pdf-reader-download').isVisible()),'Commande absente : '+label+' sur écran '+width);
+              }
               const buttonsFit=await mobile.evaluate(()=>{
                 const a=document.querySelector('[data-pdf-action="fit"]').getBoundingClientRect();
                 const b=document.querySelector('[data-pdf-action="fit-page"]').getBoundingClientRect();

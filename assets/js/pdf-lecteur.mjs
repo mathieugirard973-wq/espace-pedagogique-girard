@@ -219,6 +219,18 @@ async function printAll(state) {
   }
 }
 
+function updateFullscreenLabel(state) {
+  const button = $(state.root, '[data-pdf-action="fullscreen"]');
+  if (!button) return;
+  const fullscreen = document.fullscreenElement === state.root || state.root.classList.contains('pdf-simulated-fullscreen');
+  const name = fullscreen ? 'Quitter le plein écran' : 'Plein écran';
+  button.setAttribute('aria-label', name);
+  button.setAttribute('aria-pressed', String(fullscreen));
+  button.setAttribute('title', name);
+  const label = $(button, '.pdf-reader-fullscreen-label');
+  if (label) label.textContent = name;
+}
+
 async function toggleFullscreen(state) {
   const root = state.root;
   try {
@@ -232,9 +244,7 @@ async function toggleFullscreen(state) {
   } catch (error) {
     root.classList.toggle('pdf-simulated-fullscreen');
   }
-  const fullscreen = document.fullscreenElement === root || root.classList.contains('pdf-simulated-fullscreen');
-  const button = $(root, '[data-pdf-action="fullscreen"]');
-  if (button) button.textContent = fullscreen ? 'Quitter le plein écran' : 'Plein écran';
+  updateFullscreenLabel(state);
   if (state.document) renderPage(state);
 }
 
@@ -308,8 +318,7 @@ export async function mount() {
   };
   window.addEventListener('resize',state.onResize);
   state.onFullscreen = () => {
-    const button = $(root, '[data-pdf-action="fullscreen"]');
-    if (button) button.textContent = document.fullscreenElement === root ? 'Quitter le plein écran' : 'Plein écran';
+    updateFullscreenLabel(state);
     if (active === state && state.document) state.onResize();
   };
   document.addEventListener('fullscreenchange',state.onFullscreen);
