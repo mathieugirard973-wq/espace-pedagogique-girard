@@ -160,7 +160,7 @@ function gamesPage(){
 
         '</div>'+
         '<div class="pdf-reader-toolgroup pdf-reader-toolgroup--actions">'+
-          '<button type="button" class="pdf-reader-action pdf-reader-action--gold pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la feuille PDF sur l’écran" disabled>Page entière</button>'+
+          '<button type="button" class="pdf-reader-action pdf-reader-fit-page" data-pdf-action="fit-page" aria-pressed="false" title="Afficher toute la feuille PDF sur l’écran" disabled>Page entière</button>'+
           '<button type="button" class="pdf-reader-action" data-pdf-action="fullscreen">Plein écran</button>'+
           '<button type="button" class="pdf-reader-action" data-pdf-action="print" disabled>Imprimer</button>'+
           '<a class="pdf-reader-action pdf-reader-action--gold" href="'+escape(r.url)+'" download>Télécharger</a>'+
