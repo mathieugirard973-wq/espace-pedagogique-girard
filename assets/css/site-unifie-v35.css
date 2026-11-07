@@ -927,7 +927,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
 }
 .pdf-reader-icon-btn{
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:36px;width:36px;min-height:36px;height:36px;
+  min-width:40px;width:40px;min-height:40px;height:40px;
   padding:0;border:0;border-radius:50%;
   background:transparent;color:#e4edf8;
   transition:background .18s ease,color .18s ease;
@@ -961,7 +961,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
 }
 .pdf-reader-mode{
   display:inline-flex;align-items:center;justify-content:center;
-  min-height:35px;padding:0 13px;
+  min-height:40px;padding:0 13px;
   border:0;border-radius:999px;
   background:transparent;color:#dce7f2;
   font-size:12px;font-weight:650;
@@ -1035,7 +1035,7 @@ body.orb33-view .fr30-page .fr30-core-title small{display:block;font-size:.52em;
 @media(max-width:720px){
   .pdf-reader-toolbar{padding:9px 8px}
   .pdf-reader-icon-btn{min-width:40px;width:40px;min-height:40px;height:40px}
-  .pdf-reader-mode{min-height:39px}
+  .pdf-reader-mode{min-height:40px}
   .pdf-reader-stage{height:59vh;min-height:340px}
   .pdf-reader-doc-nav{padding:9px 7px;gap:5px}
   .pdf-reader-doc-link{font-size:11px;padding:6px 7px}
